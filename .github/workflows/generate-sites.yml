@@ -11,9 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
+      - name: check rustup wasm32-unknown-unknown
+        run: rustup target list | grep wasm32-unknown-unknown
 
       - name: wasm-pack install
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
