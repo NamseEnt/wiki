@@ -3,9 +3,16 @@ on:
   push:
     branches:
       - "main"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 concurrency:
   group: generate-sites-${{ github.ref }}
   cancel-in-progress: true
+
 jobs:
   generate-sites:
     runs-on: ubuntu-latest
@@ -37,11 +44,14 @@ jobs:
         working-directory: flow/site-generate
         run: cargo run
 
-      - name: git commit and push docs if changed
-        working-directory: docs
-        run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add .
-          git commit -m "docs: update docs" || true
-          git push || true
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: "docs"
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
