@@ -1,16 +1,15 @@
 use crate::*;
 use render_tree::{Node, RenderTree};
 
-pub async fn start<'a, Model: Reduce, View: Render + PartialEq + Clone + 'static>(
-    mut model: Model,
-    to_view: impl Fn(&Model) -> View,
+pub async fn start<'a, View: Render + PartialEq + Clone + 'static>(
+    mut model: impl ViewModel<View>,
     on_mount: &dyn Fn(&Node, &Vec<&Node>),
 ) {
     // TODO: Pass event to tx
     let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
 
     let mut render_tree: Option<RenderTree> = None;
-    let view = to_view(&model);
+    let view = model.as_view();
     update_view(&mut render_tree, view, on_mount);
 
     loop {
@@ -19,9 +18,19 @@ pub async fn start<'a, Model: Reduce, View: Render + PartialEq + Clone + 'static
 
         model = model.reduce(event.as_ref());
 
-        let view = to_view(&model);
+        let view = model.as_view();
         update_view(&mut render_tree, view, on_mount);
     }
+}
+
+pub fn render_once<'a, View: Render + PartialEq + Clone + 'static>(
+    model: impl ViewModel<View>,
+    on_mount: &dyn Fn(&Node, &Vec<&Node>),
+) -> Option<RenderTree> {
+    let mut render_tree: Option<RenderTree> = None;
+    let view = model.as_view();
+    update_view(&mut render_tree, view, on_mount);
+    render_tree
 }
 
 fn update_view<'a>(

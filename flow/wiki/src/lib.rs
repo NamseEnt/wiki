@@ -1,26 +1,28 @@
 use flow::prelude::*;
-use wasm_bindgen::prelude::*;
 
-#[wasm_bindgen(start)]
-pub async fn main() {
-    std::panic::set_hook(Box::new(console_error_panic_hook::hook));
-    flow::dom::start_dom("root", WikiAppModel {}, |WikiAppModel {}| WikiAppView {}).await;
+pub struct WikiAppModel {
+    pub title: String,
 }
 
-struct WikiAppModel {}
-
-impl Reduce for WikiAppModel {
+impl ViewModel<WikiAppView> for WikiAppModel {
     fn reduce(self, event: &dyn std::any::Any) -> Self {
-        Self {}
+        self
+    }
+    fn as_view(&self) -> WikiAppView {
+        WikiAppView {
+            title: self.title.clone(),
+        }
     }
 }
 
-#[derive(PartialEq, Clone)]
-struct WikiAppView {}
+#[derive(PartialEq, Clone, Debug)]
+pub struct WikiAppView {
+    pub title: String,
+}
 
 impl Render for WikiAppView {
     fn render(self: Box<Self>) -> Element {
-        h1((), "남세엔터 위키:대문")
+        h1((), self.title)
     }
     fn on_mount(&self) {
         flow::log!("WikiAppView mounted");

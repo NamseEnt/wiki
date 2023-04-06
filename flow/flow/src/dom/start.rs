@@ -1,10 +1,9 @@
 use crate::{render_tree::Node, *};
 use wasm_bindgen::JsCast;
 
-pub async fn start_dom<Model: Reduce, View: Render + PartialEq + Clone + 'static>(
+pub async fn start_dom<ViewModel: Reduce + IntoView<View>, View: Render + PartialEq + Clone + 'static>(
     root_id: impl ToString,
-    mut model: Model,
-    to_view: impl Fn(&Model) -> View,
+    mut model: ViewModel,
 ) {
     let root_id = root_id.to_string();
     let root = web_sys::window()

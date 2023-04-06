@@ -1,36 +1,17 @@
 mod any_clone_partial_eq;
-pub mod h1;
-pub mod li;
+mod html_node;
+#[cfg(feature = "dom-ssr")]
+pub mod server_side_render;
+#[cfg(feature = "dom")]
 mod start;
 pub mod style;
 
-use crate::{render, Element, IntoElement};
 use any_clone_partial_eq::*;
-pub use h1::*;
-pub use li::*;
+pub use html_node::*;
+#[cfg(feature = "dom")]
 pub use start::*;
+use std::fmt::Debug;
 pub use style::*;
-
-impl IntoElement for &str {
-    fn into_element(self) -> Element {
-        text(self)
-    }
-}
-impl IntoElement for &String {
-    fn into_element(self) -> Element {
-        text(self)
-    }
-}
-impl IntoElement for String {
-    fn into_element(self) -> Element {
-        text(self)
-    }
-}
-
-fn text(text: impl ToString) -> Element {
-    println!("text: {:?}", text.to_string());
-    render(())
-}
 
 pub struct OnClick {
     event: Box<dyn AnyClonePartialEq>,
@@ -48,8 +29,13 @@ impl PartialEq for OnClick {
         self.event.equals(other.event.as_ref())
     }
 }
+impl Debug for OnClick {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.event.debug(f)
+    }
+}
 
-pub fn on_click(event: impl std::any::Any + Clone + PartialEq) -> OnClick {
+pub fn on_click(event: impl std::any::Any + Clone + PartialEq + Debug) -> OnClick {
     OnClick {
         event: Box::new(event),
     }

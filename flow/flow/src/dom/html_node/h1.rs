@@ -1,8 +1,7 @@
-use super::*;
-use crate::Render;
+use crate::*;
 
 pub fn h1(props: impl H1Props, children: impl IntoElement) -> Element {
-    crate::log!("h1");
+    crate::log!("h1()");
     let mut h1 = H1View {
         style: None,
         on_click: None,
@@ -14,7 +13,7 @@ pub fn h1(props: impl H1Props, children: impl IntoElement) -> Element {
     }
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct H1View {
     style: Option<HtmlStyle>,
     on_click: Option<OnClick>,
@@ -26,7 +25,9 @@ impl Render for H1View {
         self.children
     }
 
-    fn on_mount(&self) {}
+    fn on_mount(&self) {
+        crate::log!("H1View::mount");
+    }
 
     fn on_unmount(&self) {
         crate::log!("H1View::on_unmount");

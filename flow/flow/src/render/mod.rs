@@ -4,8 +4,9 @@ mod into_element;
 pub use element::Element;
 pub use into_element::IntoElement;
 use std::any::Any;
+use std::fmt::Debug;
 
-pub trait Render: AnyEqual + CloneBox {
+pub trait Render: AnyEqual + CloneBox + Debug {
     #[deprecated(note = "Please do not use this method.")]
     fn render(self: Box<Self>) -> Element;
     fn on_mount(&self) {}

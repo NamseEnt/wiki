@@ -4,6 +4,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
+#[derive(Debug)]
 pub struct Node {
     pub box_render: Box<dyn Render>,
     pub platform_data: Arc<Mutex<Option<Box<dyn Any>>>>,
@@ -18,6 +19,7 @@ impl Node {
     }
 }
 
+#[derive(Debug)]
 pub enum RenderTree {
     Single {
         node: Node,

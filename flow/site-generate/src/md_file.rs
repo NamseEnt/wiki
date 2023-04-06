@@ -13,24 +13,19 @@ impl MdFile {
             .unwrap()
             .to_str()
             .unwrap();
-        let html_content = {
-            let arena = comrak::Arena::new();
-            let root =
-                comrak::parse_document(&arena, &self.content, &comrak::ComrakOptions::default());
-            let mut html_buffer = vec![];
-            comrak::format_html(&root, &comrak::ComrakOptions::default(), &mut html_buffer)
-                .unwrap();
-            String::from_utf8(html_buffer).unwrap()
-        };
+
+        let root = flow::dom::server_side_render::server_side_render(
+            "root",
+            wiki::WikiAppModel {
+                title: title.to_string(),
+            },
+        );
         format!(
             r#"<html>
     <head>
     </head>
     <body>
-        <div id="root">
-            <h1>{title}</h1>
-            {html_content}
-        </div>        
+        {root}    
     </body>
     <script type="module" src="/index.js"></script>
 </html>

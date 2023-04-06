@@ -1,5 +1,6 @@
 use super::*;
 
+#[derive(Debug)]
 pub enum Element {
     Single { box_render: Box<dyn Render> },
     Multiple { elements: Vec<Element> },

@@ -1,8 +1,7 @@
-use super::*;
-use crate::Render;
+use crate::*;
 
 pub fn li(props: impl LiProps, children: impl IntoElement) -> Element {
-    crate::log!("li");
+    crate::log!("li()");
     let mut li = LiView {
         style: None,
         on_click: None,
@@ -14,7 +13,7 @@ pub fn li(props: impl LiProps, children: impl IntoElement) -> Element {
     }
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct LiView {
     style: Option<HtmlStyle>,
     on_click: Option<OnClick>,
@@ -26,7 +25,9 @@ impl Render for LiView {
         self.children
     }
 
-    fn on_mount(&self) {}
+    fn on_mount(&self) {
+        crate::log!("LiView::mount");
+    }
 
     fn on_unmount(&self) {
         crate::log!("LiView::on_unmount");
