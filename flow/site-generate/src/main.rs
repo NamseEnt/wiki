@@ -1,4 +1,8 @@
-use std::{fs, path, sync::mpsc};
+mod dir;
+mod md_file;
+
+use md_file::MdFile;
+use std::{fs, path, process, sync::mpsc};
 
 fn main() {
     let md_files = start_read_contents_dir();
@@ -6,66 +10,54 @@ fn main() {
     for md_file in md_files {
         md_file.save_as_docs();
     }
+
+    generate_flow_files();
 }
 
-#[derive(Debug)]
-struct MdFile {
-    content: String,
-    contents_dir_relative_path: path::PathBuf,
-}
-impl MdFile {
-    fn to_html(&self) -> String {
-        let title = self
-            .contents_dir_relative_path
-            .file_stem()
-            .unwrap()
-            .to_str()
-            .unwrap();
-        let html_content = {
-            let arena = comrak::Arena::new();
-            let root =
-                comrak::parse_document(&arena, &self.content, &comrak::ComrakOptions::default());
-            let mut html_buffer = vec![];
-            comrak::format_html(&root, &comrak::ComrakOptions::default(), &mut html_buffer)
-                .unwrap();
-            String::from_utf8(html_buffer).unwrap()
-        };
-        format!(
-            r#"<html>
-    <head>
-    </head>
-    <body>
-        <h1>{title}</h1>
-        {html_content}
-    </body>
-</html>
-"#
-        )
+fn generate_flow_files() {
+    let index_js = r#"
+import init from "/wiki.js";
+
+(async () => {
+    await init();
+})();
+"#;
+
+    fs::write(dir::docs_dir().join("index.js"), index_js).unwrap();
+
+    let build_status = process::Command::new("wasm-pack")
+        .current_dir(dir::wiki_dir())
+        .args([
+            "build",
+            "--target",
+            "web",
+            "--out-name",
+            "wiki",
+            "--dev",
+            "--out-dir",
+            dir::docs_dir().to_str().unwrap(),
+        ])
+        .status()
+        .unwrap();
+
+    if !build_status.success() {
+        panic!("Failed to build wiki.wasm");
     }
 
-    fn save_as_docs(&self) {
-        let dest_path = repository_root_dir()
-            .join("docs")
-            .join(&self.contents_dir_relative_path)
-            .with_extension("html");
+    let wasm_path = dir::wiki_dir()
+        .join("target")
+        .join("wasm32-unknown-unknown")
+        .join("release")
+        .join("wiki.wasm");
 
-        let html_content = self.to_html();
-
-        fs::create_dir_all(dest_path.parent().unwrap()).unwrap();
-        fs::write(dest_path, html_content).unwrap();
-    }
-}
-
-fn repository_root_dir() -> path::PathBuf {
-    let cwd = std::env::current_dir().unwrap();
-    return cwd.parent().unwrap().parent().unwrap().to_path_buf();
+    fs::copy(wasm_path, dir::docs_dir().join("wiki.wasm")).unwrap();
 }
 
 fn start_read_contents_dir() -> mpsc::Receiver<MdFile> {
     let (tx, rx) = mpsc::sync_channel(100);
 
     std::thread::spawn(move || {
-        let contents_dir_path = repository_root_dir().join("contents");
+        let contents_dir_path = dir::contents_dir();
 
         let mut stack = vec![contents_dir_path.clone()];
 
