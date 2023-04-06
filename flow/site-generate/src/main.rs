@@ -15,18 +15,12 @@ fn main() {
 }
 
 fn generate_flow_files() {
-    let index_js = r#"
-import init from "/wiki.js";
-
-(async () => {
-    await init();
-})();
-"#;
+    let index_js = include_str!("index.js");
 
     fs::write(dir::docs_dir().join("index.js"), index_js).unwrap();
 
     let build_status = process::Command::new("wasm-pack")
-        .current_dir(dir::wiki_dir())
+        .current_dir(dir::wiki_dom_dir())
         .args([
             "build",
             "--target",
@@ -43,14 +37,6 @@ import init from "/wiki.js";
     if !build_status.success() {
         panic!("Failed to build wiki.wasm");
     }
-
-    let wasm_path = dir::wiki_dir()
-        .join("target")
-        .join("wasm32-unknown-unknown")
-        .join("release")
-        .join("wiki.wasm");
-
-    fs::copy(wasm_path, dir::docs_dir().join("wiki.wasm")).unwrap();
 }
 
 fn start_read_contents_dir() -> mpsc::Receiver<MdFile> {

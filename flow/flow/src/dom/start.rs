@@ -1,9 +1,9 @@
 use crate::{render_tree::Node, *};
 use wasm_bindgen::JsCast;
 
-pub async fn start_dom<ViewModel: Reduce + IntoView<View>, View: Render + PartialEq + Clone + 'static>(
+pub async fn start_dom<View: Render + PartialEq + Clone + 'static>(
     root_id: impl ToString,
-    mut model: ViewModel,
+    mut model: impl ViewModel<View>,
 ) {
     let root_id = root_id.to_string();
     let root = web_sys::window()
@@ -54,7 +54,7 @@ pub async fn start_dom<ViewModel: Reduce + IntoView<View>, View: Render + Partia
             *node.platform_data.lock().unwrap() = Some(Box::new(h1_element));
         }
     };
-    crate::start(model, to_view, &on_mount).await;
+    crate::start(model, &on_mount).await;
 }
 
 fn find_dom_parent(ancestors: &[&Node]) -> Option<web_sys::Element> {

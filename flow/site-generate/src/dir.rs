@@ -13,6 +13,6 @@ pub fn docs_dir() -> path::PathBuf {
     repository_root_dir().join("docs")
 }
 
-pub fn wiki_dir() -> path::PathBuf {
-    repository_root_dir().join("flow").join("wiki")
+pub fn wiki_dom_dir() -> path::PathBuf {
+    repository_root_dir().join("flow").join("wiki-dom")
 }
