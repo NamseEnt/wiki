@@ -6,5 +6,11 @@ edition = "2021"
 [lib]
 crate-type = ["cdylib", "rlib"]
 
+[features]
+dom = ["flow/dom"]
+dom-ssr = ["flow/dom-ssr"]
+
 [dependencies]
 flow = { path = "../flow" }
+comrak = "0.18"
+serde = { version = "1.0", features = ["derive"] }

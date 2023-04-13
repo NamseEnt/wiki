@@ -1,9 +1,8 @@
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen()]
-pub async fn start(title: String) {
+pub async fn start() {
     std::panic::set_hook(Box::new(console_error_panic_hook::hook));
 
-    // TODO: hydrate model from server side rendered result
-    flow::dom::start_dom("root", wiki::WikiAppModel { title }).await;
+    flow::dom::hydrate::<wiki::WikiAppModel, wiki::WikiAppView>("root").await;
 }

@@ -18,18 +18,18 @@ impl IntoElement for String {
 
 fn text(text: impl ToString) -> Element {
     Element::Single {
-        box_render: Box::new(TextNode {
+        box_render: Box::new(HtmlNodeView::Text(TextNodeView {
             text: text.to_string(),
-        }),
+        })),
     }
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct TextNode {
+pub struct TextNodeView {
     pub text: String,
 }
 
-impl Render for TextNode {
+impl Render for TextNodeView {
     fn render(self: Box<Self>) -> Element {
         Element::Multiple { elements: vec![] }
     }

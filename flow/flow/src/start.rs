@@ -6,7 +6,7 @@ pub async fn start<'a, View: Render + PartialEq + Clone + 'static>(
     on_mount: &dyn Fn(&Node, &Vec<&Node>),
 ) {
     // TODO: Pass event to tx
-    let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
+    let (_tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
 
     let mut render_tree: Option<RenderTree> = None;
     let view = model.as_view();

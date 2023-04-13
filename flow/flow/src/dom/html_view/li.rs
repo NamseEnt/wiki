@@ -9,7 +9,7 @@ pub fn li(props: impl LiProps, children: impl IntoElement) -> Element {
     };
     props.add_to(&mut li);
     Element::Single {
-        box_render: Box::new(li),
+        box_render: Box::new(HtmlNodeView::Li(li)),
     }
 }
 

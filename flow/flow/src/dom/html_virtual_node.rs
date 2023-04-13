@@ -1,14 +1,16 @@
 #[derive(Clone, Debug)]
-pub enum HtmlNode {
+pub enum HtmlVirtualNode {
     Element(HtmlElement),
     Text(String),
+    RawElement { html: String },
 }
 
-impl HtmlNode {
+impl HtmlVirtualNode {
     pub fn as_html(&self) -> String {
         match self {
             Self::Element(element) => element.as_html(),
             Self::Text(text) => text.clone(),
+            Self::RawElement { html } => html.clone(),
         }
     }
 }
@@ -17,7 +19,7 @@ impl HtmlNode {
 pub struct HtmlElement {
     tag: String,
     id: Option<String>,
-    children: Vec<HtmlNode>,
+    children: Vec<HtmlVirtualNode>,
 }
 impl HtmlElement {
     pub fn new(tag: impl ToString) -> Self {
@@ -31,7 +33,7 @@ impl HtmlElement {
         self.id = Some(id.to_string());
         self
     }
-    pub fn append_child(&mut self, element: HtmlNode) {
+    pub fn append_child(&mut self, element: HtmlVirtualNode) {
         self.children.push(element);
     }
     pub fn as_html(&self) -> String {

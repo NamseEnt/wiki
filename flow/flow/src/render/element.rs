@@ -58,7 +58,7 @@ impl PartialEq for Element {
 }
 
 impl Element {
-    pub fn event(self, build: impl FnOnce(&mut EventBuilder)) -> Element {
+    pub fn event(self, _build: impl FnOnce(&mut EventBuilder)) -> Element {
         render(())
     }
 }
@@ -68,11 +68,11 @@ pub struct EventBuilder {}
 impl EventBuilder {
     pub fn on_click_fn<Event: std::any::Any>(
         &mut self,
-        handler: impl Fn(ClickEvent) -> Option<Event> + 'static,
+        _handler: impl Fn(ClickEvent) -> Option<Event> + 'static,
     ) -> Self {
         todo!()
     }
-    pub fn on_click<Event: std::any::Any>(&mut self, event: Event) -> Self {
+    pub fn on_click<Event: std::any::Any>(&mut self, _event: Event) -> Self {
         todo!()
     }
 }

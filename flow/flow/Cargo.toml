@@ -11,6 +11,10 @@ dom-ssr = []
 wasm-bindgen = { version = "0.2.84", optional = true }
 tokio = { version = "1.27.0", features = ["sync"] }
 lazy_static = "1.4.0"
+serde = "1.0"
+serde_json = "1.0"
+anyhow = "1.0.70"
+js-sys = "0.3.61"
 
 [dependencies.web-sys]
 version = "0.3.61"
@@ -23,4 +27,5 @@ features = [
     "HtmlElement",
     "HtmlLiElement",
     "HtmlHeadingElement",
+    "Text",
 ]

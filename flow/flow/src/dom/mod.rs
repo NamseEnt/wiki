@@ -1,5 +1,8 @@
 mod any_clone_partial_eq;
-mod html_node;
+mod html_view;
+mod html_virtual_node;
+#[cfg(feature = "dom")]
+mod hydrate;
 #[cfg(feature = "dom-ssr")]
 pub mod server_side_render;
 #[cfg(feature = "dom")]
@@ -7,11 +10,17 @@ mod start;
 pub mod style;
 
 use any_clone_partial_eq::*;
-pub use html_node::*;
+pub use html_view::*;
+pub use html_virtual_node::*;
+#[cfg(feature = "dom")]
+pub use hydrate::*;
 #[cfg(feature = "dom")]
 pub use start::*;
 use std::fmt::Debug;
 pub use style::*;
+
+#[cfg(any(feature = "dom", feature = "dom-ssr"))]
+const INITIAL_STATE: &str = "__INITIAL_STATE__";
 
 pub struct OnClick {
     event: Box<dyn AnyClonePartialEq>,

@@ -9,7 +9,7 @@ pub fn h1(props: impl H1Props, children: impl IntoElement) -> Element {
     };
     props.add_to(&mut h1);
     Element::Single {
-        box_render: Box::new(h1),
+        box_render: Box::new(HtmlNodeView::H1(h1)),
     }
 }
 

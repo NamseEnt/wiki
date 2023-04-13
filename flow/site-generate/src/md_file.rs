@@ -13,11 +13,11 @@ impl MdFile {
             .unwrap()
             .to_str()
             .unwrap();
-
-        let root = flow::dom::server_side_render::server_side_render(
+        let root = wiki::flow::dom::server_side_render::server_side_render(
             "root",
             wiki::WikiAppModel {
                 title: title.to_string(),
+                markdown_content: self.content.clone(),
             },
         );
         format!(

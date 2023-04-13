@@ -31,58 +31,36 @@ where
 
 impl<T0, T1> IntoElement for (T0, T1)
 where
-    T0: Render + 'static,
-    T1: Render + 'static,
+    T0: IntoElement + 'static,
+    T1: IntoElement + 'static,
 {
     fn into_element(self) -> Element {
         let (t0, t1) = self;
         Element::Multiple {
-            elements: vec![
-                Element::Single {
-                    box_render: Box::new(t0),
-                },
-                Element::Single {
-                    box_render: Box::new(t1),
-                },
-            ],
+            elements: vec![t0.into_element(), t1.into_element()],
         }
     }
 }
 
 impl<T0, T1, T2> IntoElement for (T0, T1, T2)
 where
-    T0: Render + 'static,
-    T1: Render + 'static,
-    T2: Render + 'static,
+    T0: IntoElement + 'static,
+    T1: IntoElement + 'static,
+    T2: IntoElement + 'static,
 {
     fn into_element(self) -> Element {
         let (t0, t1, t2) = self;
 
         Element::Multiple {
-            elements: vec![
-                Element::Single {
-                    box_render: Box::new(t0),
-                },
-                Element::Single {
-                    box_render: Box::new(t1),
-                },
-                Element::Single {
-                    box_render: Box::new(t2),
-                },
-            ],
+            elements: vec![t0.into_element(), t1.into_element(), t2.into_element()],
         }
     }
 }
 
-impl<T: Render + 'static> IntoElement for Vec<T> {
+impl<T: IntoElement + 'static> IntoElement for Vec<T> {
     fn into_element(self) -> Element {
         Element::Multiple {
-            elements: self
-                .into_iter()
-                .map(|t| Element::Single {
-                    box_render: Box::new(t),
-                })
-                .collect(),
+            elements: self.into_iter().map(|t| t.into_element()).collect(),
         }
     }
 }

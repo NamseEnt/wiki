@@ -1,10 +1,12 @@
 pub mod dom;
-pub mod prelude;
 mod model;
+pub mod prelude;
 mod render;
 mod render_tree;
 mod start;
 
+pub use anyhow;
+pub use anyhow::Result;
 pub use dom::*;
 pub use model::*;
 pub use render::*;
