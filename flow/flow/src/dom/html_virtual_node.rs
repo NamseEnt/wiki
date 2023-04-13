@@ -2,7 +2,6 @@
 pub enum HtmlVirtualNode {
     Element(HtmlElement),
     Text(String),
-    RawElement { html: String },
 }
 
 impl HtmlVirtualNode {
@@ -10,7 +9,6 @@ impl HtmlVirtualNode {
         match self {
             Self::Element(element) => element.as_html(),
             Self::Text(text) => text.clone(),
-            Self::RawElement { html } => html.clone(),
         }
     }
 }

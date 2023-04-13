@@ -10,6 +10,7 @@ pub fn server_side_render<View: Render + PartialEq + Clone + 'static>(
     let serialized_model = serde_json::to_string(&serde_json::to_string(&model).unwrap()).unwrap();
 
     let render_tree = crate::render_once(model, &|_, _| {}).unwrap();
+    println!("{render_tree:#?}");
 
     fn traverse(render_tree: render_tree::RenderTree, parent: &mut HtmlElement) {
         match render_tree {
@@ -20,10 +21,9 @@ pub fn server_side_render<View: Render + PartialEq + Clone + 'static>(
                     match html_node_view {
                         HtmlNodeView::Text(text) => HtmlVirtualNode::Text(text.text.clone()),
                         HtmlNodeView::H1(_) => HtmlVirtualNode::Element(HtmlElement::new("h1")),
-                        HtmlNodeView::Li(_) => HtmlVirtualNode::Element(HtmlElement::new("l1")),
-                        HtmlNodeView::RawHtml(raw_html_view) => HtmlVirtualNode::RawElement {
-                            html: raw_html_view.html.clone(),
-                        },
+                        HtmlNodeView::Li(_) => HtmlVirtualNode::Element(HtmlElement::new("li")),
+                        HtmlNodeView::P(_) => HtmlVirtualNode::Element(HtmlElement::new("p")),
+                        HtmlNodeView::Ul(_) => HtmlVirtualNode::Element(HtmlElement::new("ul")),
                     }
                 } else {
                     for child in children {
@@ -38,7 +38,7 @@ pub fn server_side_render<View: Render + PartialEq + Clone + 'static>(
                             traverse(child, element);
                         }
                     }
-                    HtmlVirtualNode::Text(_) | HtmlVirtualNode::RawElement { html: _ } => {}
+                    HtmlVirtualNode::Text(_) => {}
                 };
                 parent.append_child(node);
             }

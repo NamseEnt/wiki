@@ -1,13 +1,9 @@
 use crate::*;
 
 pub fn raw_html(html: impl ToString) -> Element {
-    crate::log!("raw_html()");
-    let raw_html = RawHtmlView {
+    render(RawHtmlView {
         html: html.to_string(),
-    };
-    Element::Single {
-        box_render: Box::new(HtmlNodeView::RawHtml(raw_html)),
-    }
+    })
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -17,7 +13,7 @@ pub struct RawHtmlView {
 
 impl Render for RawHtmlView {
     fn render(self: Box<Self>) -> Element {
-        Element::Multiple { elements: vec![] }
+        html_to_element(&self.html)
     }
 
     fn on_mount(&self) {
@@ -26,5 +22,35 @@ impl Render for RawHtmlView {
 
     fn on_unmount(&self) {
         crate::log!("RawHtmlView::on_unmount");
+    }
+}
+
+fn html_to_element(html: &str) -> Element {
+    let dom = scraper::Html::parse_fragment(&html);
+
+    let root = dom.root_element();
+
+    dom_element_to_element(root)
+}
+
+fn dom_element_to_element(element: scraper::ElementRef) -> Element {
+    let children = element
+        .children()
+        .filter_map(|child| match child.value() {
+            scraper::node::Node::Element(_) => Some(dom_element_to_element(
+                scraper::ElementRef::wrap(child).unwrap(),
+            )),
+            scraper::node::Node::Text(text) => Some(text.text.to_string().into_element()),
+            _ => None,
+        })
+        .collect::<Vec<Element>>();
+
+    match element.value().name() {
+        "html" => crate::render(children),
+        "h1" => h1((), children),
+        "li" => li((), children),
+        "p" => p((), children),
+        "ul" => ul((), children),
+        _ => panic!("Unknown element: {}", element.value().name()),
     }
 }
