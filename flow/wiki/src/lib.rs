@@ -29,10 +29,16 @@ pub struct WikiAppView {
 impl Render for WikiAppView {
     fn render(self: Box<Self>) -> Element {
         render((
-            h1((), self.title),
-            ContentBody {
-                markdown_content: self.markdown_content,
-            },
+            nav((), ()),
+            section(
+                (),
+                (
+                    h1((), self.title),
+                    ContentBody {
+                        markdown_content: self.markdown_content,
+                    },
+                ),
+            ),
         ))
     }
     fn on_mount(&self) {

@@ -1,35 +1,125 @@
-mod h1;
-mod li;
-mod p;
+mod common_element;
 mod raw_html;
 mod text;
-mod ul;
 
 use crate::{render, Render};
-pub use h1::*;
-pub use li::*;
-pub use p::*;
+use common_element::*;
 pub use raw_html::*;
 pub use text::*;
-pub use ul::*;
 
-#[derive(Clone, PartialEq, Debug)]
-pub(crate) enum HtmlNodeView {
-    Text(TextNodeView),
-    H1(H1View),
-    Li(LiView),
-    P(PView),
-    Ul(UlView),
-}
-
-impl Render for HtmlNodeView {
-    fn render(self: Box<Self>) -> crate::Element {
-        match *self {
-            HtmlNodeView::Text(text) => render(text),
-            HtmlNodeView::H1(h1) => render(h1),
-            HtmlNodeView::Li(li) => render(li),
-            HtmlNodeView::P(p) => render(p),
-            HtmlNodeView::Ul(ul) => render(ul),
-        }
-    }
-}
+common_element!(
+    (a, A),
+    (abbr, Abbr),
+    (address, Address),
+    (area, Area),
+    (article, Article),
+    (aside, Aside),
+    (audio, Audio),
+    (b, B),
+    (base, Base),
+    (bdi, Bdi),
+    (bdo, Bdo),
+    (blockquote, Blockquote),
+    (body, Body),
+    (br, Br),
+    (button, Button),
+    (canvas, Canvas),
+    (caption, Caption),
+    (cite, Cite),
+    (code, Code),
+    (col, Col),
+    (colgroup, Colgroup),
+    (data, Data),
+    (datalist, Datalist),
+    (dd, Dd),
+    (del, Del),
+    (details, Details),
+    (dfn, Dfn),
+    (dialog, Dialog),
+    (div, Div),
+    (dl, Dl),
+    (dt, Dt),
+    (em, Em),
+    (embed, Embed),
+    (fieldset, Fieldset),
+    (figcaption, Figcaption),
+    (figure, Figure),
+    (footer, Footer),
+    (form, Form),
+    (head, Head),
+    (header, Header),
+    (hgroup, Hgroup),
+    (h1, H1),
+    (h2, H2),
+    (h3, H3),
+    (h4, H4),
+    (h5, H5),
+    (h6, H6),
+    (hr, Hr),
+    (html, Html),
+    (i, I),
+    (iframe, Iframe),
+    (img, Img),
+    (input, Input),
+    (ins, Ins),
+    (kbd, Kbd),
+    (keygen, Keygen),
+    (label, Label),
+    (legend, Legend),
+    (li, Li),
+    (link, Link),
+    (main, Main),
+    (map, Map),
+    (mark, Mark),
+    (menu, Menu),
+    (menuitem, Menuitem),
+    (meta, Meta),
+    (meter, Meter),
+    (nav, Nav),
+    (noscript, Noscript),
+    (object, Object),
+    (ol, Ol),
+    (optgroup, Optgroup),
+    (option, Option),
+    (output, Output),
+    (p, P),
+    (param, Param),
+    (picture, Picture),
+    (pre, Pre),
+    (progress, Progress),
+    (q, Q),
+    (rp, Rp),
+    (rt, Rt),
+    (ruby, Ruby),
+    (s, S),
+    (samp, Samp),
+    (script, Script),
+    (section, Section),
+    (select, Select),
+    (small, Small),
+    (source, Source),
+    (span, Span),
+    (strong, Strong),
+    (style, Style),
+    (sub, Sub),
+    (summary, Summary),
+    (sup, Sup),
+    (svg, Svg),
+    (table, Table),
+    (tbody, Tbody),
+    (td, Td),
+    (template, Template),
+    (textarea, Textarea),
+    (tfoot, Tfoot),
+    (th, Th),
+    (thead, Thead),
+    (time, Time),
+    (title, Title),
+    (tr, Tr),
+    (track, Track),
+    (u, U),
+    (ul, Ul),
+    (var, Var),
+    (video, Video),
+    (wbr, Wbr)
+);

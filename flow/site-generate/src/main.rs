@@ -1,5 +1,6 @@
 mod dir;
 mod md_file;
+mod search;
 
 use md_file::MdFile;
 use std::{fs, path, process, sync::mpsc};

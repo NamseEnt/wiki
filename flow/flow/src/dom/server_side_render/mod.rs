@@ -18,13 +18,7 @@ pub fn server_side_render<View: Render + PartialEq + Clone + 'static>(
                 let mut node = if let Some(html_node_view) =
                     node.box_render.as_any().downcast_ref::<HtmlNodeView>()
                 {
-                    match html_node_view {
-                        HtmlNodeView::Text(text) => HtmlVirtualNode::Text(text.text.clone()),
-                        HtmlNodeView::H1(_) => HtmlVirtualNode::Element(HtmlElement::new("h1")),
-                        HtmlNodeView::Li(_) => HtmlVirtualNode::Element(HtmlElement::new("li")),
-                        HtmlNodeView::P(_) => HtmlVirtualNode::Element(HtmlElement::new("p")),
-                        HtmlNodeView::Ul(_) => HtmlVirtualNode::Element(HtmlElement::new("ul")),
-                    }
+                    html_node_view.as_virtual_node()
                 } else {
                     for child in children {
                         traverse(child, parent);

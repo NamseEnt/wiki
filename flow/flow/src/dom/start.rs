@@ -15,11 +15,8 @@ pub async fn start_dom<View: Render + PartialEq + Clone + 'static>(
         .expect(format!("Could not find element with id: {}", root_id).as_str());
 
     root_element.set_inner_html("");
-        
-    let root_node = root_element
-        .dyn_into::<web_sys::Node>()
-        .unwrap();
 
+    let root_node = root_element.dyn_into::<web_sys::Node>().unwrap();
 
     let on_mount = |node: &Node, ancestors: &Vec<&Node>| {
         let Some(html_node_view) = node.box_render.as_any().downcast_ref::<HtmlNodeView>() else {
@@ -61,16 +58,10 @@ fn try_update_dom_node_without_create(
 
             true
         }
-        HtmlNodeView::H1(_) => {
-            let Some(heading_element) = dom_node.dyn_ref::<web_sys::HtmlHeadingElement>() else {
-                return false;
-            };
-
-            heading_element.tag_name() == "H1"
-        }
-        HtmlNodeView::Li(_) => dom_node.has_type::<web_sys::HtmlLiElement>(),
-        HtmlNodeView::P(_) => dom_node.has_type::<web_sys::HtmlParagraphElement>(),
-        HtmlNodeView::Ul(_) => dom_node.has_type::<web_sys::HtmlUListElement>(),
+        _ => dom_node
+            .dyn_ref::<web_sys::HtmlElement>()
+            .map(|x| x.tag_name() == html_node_view.upper_tag_name().unwrap())
+            .is_some(),
     }
 }
 
@@ -78,10 +69,10 @@ fn create_dom_node(html_node_view: &HtmlNodeView) -> web_sys::Node {
     let document = web_sys::window().unwrap().document().unwrap();
     match html_node_view {
         HtmlNodeView::Text(text) => document.create_text_node(&text.text).into(),
-        HtmlNodeView::H1(_) => document.create_element("h1").unwrap().into(),
-        HtmlNodeView::Li(_) => document.create_element("li").unwrap().into(),
-        HtmlNodeView::P(_) => document.create_element("p").unwrap().into(),
-        HtmlNodeView::Ul(_) => document.create_element("ul").unwrap().into(),
+        _ => document
+            .create_element(html_node_view.lower_tag_name().unwrap())
+            .unwrap()
+            .into(),
     }
 }
 
