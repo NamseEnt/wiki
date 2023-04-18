@@ -6,6 +6,7 @@ macro_rules! common_element {
             $(
                 $upper($lower::View),
             )*
+            TextInput(text_input::View),
         }
 
         impl HtmlNodeView {
@@ -18,6 +19,9 @@ macro_rules! common_element {
                             stringify!($lower)
                         )),
                     )*
+                    Self::TextInput(_) => crate::dom::HtmlVirtualNode::Element(crate::dom::HtmlElement::new(
+                        "input"
+                    )),
                 }
             }
             #[cfg(feature = "dom")]
@@ -27,6 +31,7 @@ macro_rules! common_element {
                     $(
                         Self::$upper(_) => Some(stringify!($upper)),
                     )*
+                    Self::TextInput(_) => Some("Input"),
                 }
             }
             #[cfg(feature = "dom")]
@@ -36,6 +41,7 @@ macro_rules! common_element {
                     $(
                         Self::$upper(_) => Some(stringify!($lower)),
                     )*
+                    Self::TextInput(_) => Some("input"),
                 }
             }
         }
@@ -48,6 +54,7 @@ macro_rules! common_element {
                     $(
                         HtmlNodeView::$upper($lower) => render($lower),
                     )*
+                    HtmlNodeView::TextInput(text_input) => render(text_input),
                 }
             }
         }
@@ -57,7 +64,7 @@ macro_rules! common_element {
                 use crate::*;
 
                 pub fn $lower(props: impl Props, children: impl IntoElement) -> Element {
-                    crate::log!("$lower()");
+                    crate::log!("{}()", stringify!($lower));
                     let mut $lower = View {
                         style: None,
                         on_click: None,
@@ -82,11 +89,11 @@ macro_rules! common_element {
                     }
 
                     fn on_mount(&self) {
-                        crate::log!("View::mount");
+                        crate::log!("{}::View::mount", stringify!($lower));
                     }
 
                     fn on_unmount(&self) {
-                        crate::log!("View::on_unmount");
+                        crate::log!("{}::View::on_unmount", stringify!($lower));
                     }
                 }
 
@@ -95,7 +102,8 @@ macro_rules! common_element {
                 }
 
                 impl Props for () {
-                    fn add_to(self, _li: &mut View) {}
+                    #[allow(unused_variables)]
+                    fn add_to(self, $lower: &mut View) {}
                 }
                 impl<T0, T1> Props for (T0, T1)
                 where

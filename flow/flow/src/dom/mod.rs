@@ -1,4 +1,3 @@
-mod any_clone_partial_eq;
 mod html_view;
 mod html_virtual_node;
 #[cfg(feature = "dom")]
@@ -9,7 +8,6 @@ pub mod server_side_render;
 mod start;
 pub mod style;
 
-use any_clone_partial_eq::*;
 pub use html_view::*;
 pub use html_virtual_node::*;
 #[cfg(feature = "dom")]
@@ -23,7 +21,7 @@ pub use style::*;
 const INITIAL_STATE: &str = "__INITIAL_STATE__";
 
 pub struct OnClick {
-    event: Box<dyn AnyClonePartialEq>,
+    event: Box<dyn crate::AnyClonePartialEq>,
 }
 
 impl Clone for OnClick {

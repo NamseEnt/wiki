@@ -1,11 +1,13 @@
 mod common_element;
 mod raw_html;
 mod text;
+mod text_input;
 
 use crate::{render, Render};
 use common_element::*;
 pub use raw_html::*;
 pub use text::*;
+pub use text_input::*;
 
 common_element!(
     (a, A),

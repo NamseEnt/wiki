@@ -15,10 +15,7 @@ impl MdFile {
             .unwrap();
         let root = wiki::flow::dom::server_side_render::server_side_render(
             "root",
-            wiki::WikiAppModel {
-                title: title.to_string(),
-                markdown_content: self.content.clone(),
-            },
+            wiki::WikiAppModel::new(title.to_string(), self.content.clone()),
         );
         format!(
             r#"<html>

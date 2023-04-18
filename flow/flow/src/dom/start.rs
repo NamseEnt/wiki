@@ -77,6 +77,19 @@ fn try_update_dom_node_without_create(
 
             true
         }
+        HtmlNodeView::TextInput(text_input) => {
+            crate::log!("here!");
+            let Some(text_input_element) = dom_node.dyn_ref::<web_sys::HtmlInputElement>() else {
+                return false;
+            };
+
+            crate::log!("am!");
+
+            text_input_element.set_value(&text_input.value);
+            crate::log!("value: {}", text_input.value);
+
+            true
+        }
         _ => dom_node
             .dyn_ref::<web_sys::HtmlElement>()
             .map(|x| x.tag_name() == html_node_view.upper_tag_name().unwrap())
@@ -88,6 +101,44 @@ fn create_dom_node(html_node_view: &HtmlNodeView) -> web_sys::Node {
     let document = web_sys::window().unwrap().document().unwrap();
     match html_node_view {
         HtmlNodeView::Text(text) => document.create_text_node(&text.text).into(),
+        HtmlNodeView::TextInput(text_input) => {
+            let text_input_element = document
+                .create_element("input")
+                .unwrap()
+                .dyn_into::<web_sys::HtmlInputElement>()
+                .unwrap();
+
+            text_input_element.set_attribute("type", "text").unwrap();
+            text_input_element.set_value(&text_input.value);
+
+            let text_value = text_input.value.clone();
+            crate::log!("value on create_dom_node: {text_value}");
+
+            text_input_element
+                .add_event_listener_with_callback(
+                    "input",
+                    wasm_bindgen::closure::Closure::wrap(Box::new({
+                        let on_changed = text_input.on_changed.clone();
+                        move |event: web_sys::InputEvent| {
+                            let element = event
+                                .target()
+                                .unwrap()
+                                .dyn_into::<web_sys::HtmlInputElement>()
+                                .unwrap();
+                            let text = element.value();
+                            on_changed.invoke(&text);
+                            event.prevent_default();
+                            element.set_value(&text_value);
+                        }
+                    })
+                        as Box<dyn FnMut(_)>)
+                    .into_js_value()
+                    .unchecked_ref(),
+                )
+                .unwrap();
+
+            text_input_element.into()
+        }
         _ => document
             .create_element(html_node_view.lower_tag_name().unwrap())
             .unwrap()

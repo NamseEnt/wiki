@@ -32,4 +32,6 @@ features = [
     "HtmlParagraphElement",
     "HtmlUListElement",
     "Text",
+    "InputEvent",
+    "HtmlInputElement",
 ]
