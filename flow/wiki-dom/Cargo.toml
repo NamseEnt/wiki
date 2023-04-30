@@ -9,7 +9,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 console_error_panic_hook = "0.1"
 flow = { path = "../flow", features = ["dom"] }
-wiki = { path = "../wiki" }
+wiki = { path = "../wiki", features = ["dom"] }
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 

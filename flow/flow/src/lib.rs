@@ -11,6 +11,8 @@ pub use dom::*;
 pub use model::*;
 pub use render::*;
 pub use start::*;
+#[cfg(feature = "dom")]
+pub use web_sys;
 
 pub fn default<T: Default>() -> T {
     T::default()
@@ -20,7 +22,7 @@ pub fn default<T: Default>() -> T {
 macro_rules! log {
     ($($arg:tt)*) => {
         #[cfg(feature = "dom")]
-        web_sys::console::log_1(&format_args!($($arg)*).to_string().into());
+        $crate::web_sys::console::log_1(&format_args!($($arg)*).to_string().into());
         #[cfg(feature = "dom-ssr")]
         println!($($arg)*);
     };
@@ -30,7 +32,7 @@ macro_rules! log {
 macro_rules! error {
     ($($arg:tt)*) => {
         #[cfg(feature = "dom")]
-        web_sys::console::error_1(&format_args!($($arg)*).to_string().into());
+        $crate::web_sys::console::error_1(&format_args!($($arg)*).to_string().into());
         #[cfg(feature = "dom-ssr")]
         println!($($arg)*);
     };
