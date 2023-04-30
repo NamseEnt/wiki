@@ -139,11 +139,145 @@ fn create_dom_node(html_node_view: &HtmlNodeView) -> web_sys::Node {
 
             text_input_element.into()
         }
-        _ => document
-            .create_element(html_node_view.lower_tag_name().unwrap())
-            .unwrap()
-            .into(),
+        HtmlNodeView::A(a) => create_element_node_for_common_html(a),
+        HtmlNodeView::Abbr(abbr) => create_element_node_for_common_html(abbr),
+        HtmlNodeView::Address(address) => create_element_node_for_common_html(address),
+        HtmlNodeView::Area(area) => create_element_node_for_common_html(area),
+        HtmlNodeView::Article(article) => create_element_node_for_common_html(article),
+        HtmlNodeView::Aside(aside) => create_element_node_for_common_html(aside),
+        HtmlNodeView::Audio(audio) => create_element_node_for_common_html(audio),
+        HtmlNodeView::B(b) => create_element_node_for_common_html(b),
+        HtmlNodeView::Base(base) => create_element_node_for_common_html(base),
+        HtmlNodeView::Bdi(bdi) => create_element_node_for_common_html(bdi),
+        HtmlNodeView::Bdo(bdo) => create_element_node_for_common_html(bdo),
+        HtmlNodeView::Blockquote(blockquote) => create_element_node_for_common_html(blockquote),
+        HtmlNodeView::Body(body) => create_element_node_for_common_html(body),
+        HtmlNodeView::Br(br) => create_element_node_for_common_html(br),
+        HtmlNodeView::Button(button) => create_element_node_for_common_html(button),
+        HtmlNodeView::Canvas(canvas) => create_element_node_for_common_html(canvas),
+        HtmlNodeView::Caption(caption) => create_element_node_for_common_html(caption),
+        HtmlNodeView::Cite(cite) => create_element_node_for_common_html(cite),
+        HtmlNodeView::Code(code) => create_element_node_for_common_html(code),
+        HtmlNodeView::Col(col) => create_element_node_for_common_html(col),
+        HtmlNodeView::Colgroup(colgroup) => create_element_node_for_common_html(colgroup),
+        HtmlNodeView::Data(data) => create_element_node_for_common_html(data),
+        HtmlNodeView::Datalist(datalist) => create_element_node_for_common_html(datalist),
+        HtmlNodeView::Dd(dd) => create_element_node_for_common_html(dd),
+        HtmlNodeView::Del(del) => create_element_node_for_common_html(del),
+        HtmlNodeView::Details(details) => create_element_node_for_common_html(details),
+        HtmlNodeView::Dfn(dfn) => create_element_node_for_common_html(dfn),
+        HtmlNodeView::Dialog(dialog) => create_element_node_for_common_html(dialog),
+        HtmlNodeView::Div(div) => create_element_node_for_common_html(div),
+        HtmlNodeView::Dl(dl) => create_element_node_for_common_html(dl),
+        HtmlNodeView::Dt(dt) => create_element_node_for_common_html(dt),
+        HtmlNodeView::Em(em) => create_element_node_for_common_html(em),
+        HtmlNodeView::Embed(embed) => create_element_node_for_common_html(embed),
+        HtmlNodeView::Fieldset(fieldset) => create_element_node_for_common_html(fieldset),
+        HtmlNodeView::Figcaption(figcaption) => create_element_node_for_common_html(figcaption),
+        HtmlNodeView::Figure(figure) => create_element_node_for_common_html(figure),
+        HtmlNodeView::Footer(footer) => create_element_node_for_common_html(footer),
+        HtmlNodeView::Form(form) => create_element_node_for_common_html(form),
+        HtmlNodeView::Head(head) => create_element_node_for_common_html(head),
+        HtmlNodeView::Header(header) => create_element_node_for_common_html(header),
+        HtmlNodeView::Hgroup(hgroup) => create_element_node_for_common_html(hgroup),
+        HtmlNodeView::H1(h1) => create_element_node_for_common_html(h1),
+        HtmlNodeView::H2(h2) => create_element_node_for_common_html(h2),
+        HtmlNodeView::H3(h3) => create_element_node_for_common_html(h3),
+        HtmlNodeView::H4(h4) => create_element_node_for_common_html(h4),
+        HtmlNodeView::H5(h5) => create_element_node_for_common_html(h5),
+        HtmlNodeView::H6(h6) => create_element_node_for_common_html(h6),
+        HtmlNodeView::Hr(hr) => create_element_node_for_common_html(hr),
+        HtmlNodeView::Html(html) => create_element_node_for_common_html(html),
+        HtmlNodeView::I(i) => create_element_node_for_common_html(i),
+        HtmlNodeView::Iframe(iframe) => create_element_node_for_common_html(iframe),
+        HtmlNodeView::Img(img) => create_element_node_for_common_html(img),
+        HtmlNodeView::Input(input) => create_element_node_for_common_html(input),
+        HtmlNodeView::Ins(ins) => create_element_node_for_common_html(ins),
+        HtmlNodeView::Kbd(kbd) => create_element_node_for_common_html(kbd),
+        HtmlNodeView::Keygen(keygen) => create_element_node_for_common_html(keygen),
+        HtmlNodeView::Label(label) => create_element_node_for_common_html(label),
+        HtmlNodeView::Legend(legend) => create_element_node_for_common_html(legend),
+        HtmlNodeView::Li(li) => create_element_node_for_common_html(li),
+        HtmlNodeView::Link(link) => create_element_node_for_common_html(link),
+        HtmlNodeView::Main(main) => create_element_node_for_common_html(main),
+        HtmlNodeView::Map(map) => create_element_node_for_common_html(map),
+        HtmlNodeView::Mark(mark) => create_element_node_for_common_html(mark),
+        HtmlNodeView::Menu(menu) => create_element_node_for_common_html(menu),
+        HtmlNodeView::Menuitem(menuitem) => create_element_node_for_common_html(menuitem),
+        HtmlNodeView::Meta(meta) => create_element_node_for_common_html(meta),
+        HtmlNodeView::Meter(meter) => create_element_node_for_common_html(meter),
+        HtmlNodeView::Nav(nav) => create_element_node_for_common_html(nav),
+        HtmlNodeView::Noscript(noscript) => create_element_node_for_common_html(noscript),
+        HtmlNodeView::Object(object) => create_element_node_for_common_html(object),
+        HtmlNodeView::Ol(ol) => create_element_node_for_common_html(ol),
+        HtmlNodeView::Optgroup(optgroup) => create_element_node_for_common_html(optgroup),
+        HtmlNodeView::Option(option) => create_element_node_for_common_html(option),
+        HtmlNodeView::Output(output) => create_element_node_for_common_html(output),
+        HtmlNodeView::P(p) => create_element_node_for_common_html(p),
+        HtmlNodeView::Param(param) => create_element_node_for_common_html(param),
+        HtmlNodeView::Picture(picture) => create_element_node_for_common_html(picture),
+        HtmlNodeView::Pre(pre) => create_element_node_for_common_html(pre),
+        HtmlNodeView::Progress(progress) => create_element_node_for_common_html(progress),
+        HtmlNodeView::Q(q) => create_element_node_for_common_html(q),
+        HtmlNodeView::Rp(rp) => create_element_node_for_common_html(rp),
+        HtmlNodeView::Rt(rt) => create_element_node_for_common_html(rt),
+        HtmlNodeView::Ruby(ruby) => create_element_node_for_common_html(ruby),
+        HtmlNodeView::S(s) => create_element_node_for_common_html(s),
+        HtmlNodeView::Samp(samp) => create_element_node_for_common_html(samp),
+        HtmlNodeView::Script(script) => create_element_node_for_common_html(script),
+        HtmlNodeView::Section(section) => create_element_node_for_common_html(section),
+        HtmlNodeView::Select(select) => create_element_node_for_common_html(select),
+        HtmlNodeView::Small(small) => create_element_node_for_common_html(small),
+        HtmlNodeView::Source(source) => create_element_node_for_common_html(source),
+        HtmlNodeView::Span(span) => create_element_node_for_common_html(span),
+        HtmlNodeView::Strong(strong) => create_element_node_for_common_html(strong),
+        HtmlNodeView::Style(style) => create_element_node_for_common_html(style),
+        HtmlNodeView::Sub(sub) => create_element_node_for_common_html(sub),
+        HtmlNodeView::Summary(summary) => create_element_node_for_common_html(summary),
+        HtmlNodeView::Sup(sup) => create_element_node_for_common_html(sup),
+        HtmlNodeView::Svg(svg) => create_element_node_for_common_html(svg),
+        HtmlNodeView::Table(table) => create_element_node_for_common_html(table),
+        HtmlNodeView::Tbody(tbody) => create_element_node_for_common_html(tbody),
+        HtmlNodeView::Td(td) => create_element_node_for_common_html(td),
+        HtmlNodeView::Template(template) => create_element_node_for_common_html(template),
+        HtmlNodeView::Textarea(textarea) => create_element_node_for_common_html(textarea),
+        HtmlNodeView::Tfoot(tfoot) => create_element_node_for_common_html(tfoot),
+        HtmlNodeView::Th(th) => create_element_node_for_common_html(th),
+        HtmlNodeView::Thead(thead) => create_element_node_for_common_html(thead),
+        HtmlNodeView::Time(time) => create_element_node_for_common_html(time),
+        HtmlNodeView::Title(title) => create_element_node_for_common_html(title),
+        HtmlNodeView::Tr(tr) => create_element_node_for_common_html(tr),
+        HtmlNodeView::Track(track) => create_element_node_for_common_html(track),
+        HtmlNodeView::U(u) => create_element_node_for_common_html(u),
+        HtmlNodeView::Ul(ul) => create_element_node_for_common_html(ul),
+        HtmlNodeView::Var(var) => create_element_node_for_common_html(var),
+        HtmlNodeView::Video(video) => create_element_node_for_common_html(video),
+        HtmlNodeView::Wbr(wbr) => create_element_node_for_common_html(wbr),
     }
+}
+
+fn create_element_node_for_common_html(view: &impl HtmlElementView) -> web_sys::Node {
+    let document = web_sys::window().unwrap().document().unwrap();
+    let element = document.create_element(view.lower_tag_name()).unwrap();
+
+    if let Some(on_click) = view.on_click() {
+        element
+            .add_event_listener_with_callback(
+                "click",
+                wasm_bindgen::closure::Closure::wrap(Box::new({
+                    let on_click = on_click.clone();
+                    move |_event: web_sys::Event| {
+                        crate::log!("click!");
+                        on_click.closure.invoke(&())
+                    }
+                }) as Box<dyn FnMut(_)>)
+                .into_js_value()
+                .unchecked_ref(),
+            )
+            .unwrap();
+    }
+
+    element.into()
 }
 
 fn find_dom_parent(ancestors: &[&Node]) -> Option<web_sys::Node> {

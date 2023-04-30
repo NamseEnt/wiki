@@ -59,6 +59,14 @@ macro_rules! common_element {
             }
         }
 
+        pub(crate) trait HtmlElementView {
+            fn on_click(&self) -> Option<&crate::OnClick>;
+            #[cfg(feature = "dom")]
+            fn upper_tag_name(&self) -> &str;
+            #[cfg(feature = "dom")]
+            fn lower_tag_name(&self) -> &str;
+        }
+
         $(
             pub mod $lower {
                 use crate::*;
@@ -79,7 +87,7 @@ macro_rules! common_element {
                 #[derive(Clone, PartialEq, Debug)]
                 pub struct View {
                     style: Option<HtmlStyle>,
-                    on_click: Option<OnClick>,
+                    pub(crate) on_click: Option<OnClick>,
                     children: Element,
                 }
 
@@ -94,6 +102,19 @@ macro_rules! common_element {
 
                     fn on_unmount(&self) {
                         crate::log!("{}::View::on_unmount", stringify!($lower));
+                    }
+                }
+                impl HtmlElementView for View {
+                    fn on_click(&self) -> Option<&crate::OnClick> {
+                        self.on_click.as_ref()
+                    }
+                    #[cfg(feature = "dom")]
+                    fn upper_tag_name(&self) -> &str {
+                        stringify!($upper)
+                    }
+                    #[cfg(feature = "dom")]
+                    fn lower_tag_name(&self) -> &str {
+                        stringify!($lower)
                     }
                 }
 

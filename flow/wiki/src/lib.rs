@@ -53,6 +53,7 @@ impl Reduce for SearchBarModel {
                         input: input.clone(),
                     }
                 }
+                SearchBarEvent::SearchButtonClicked => todo!(),
             }
         } else {
             self
@@ -62,6 +63,7 @@ impl Reduce for SearchBarModel {
 
 pub enum SearchBarEvent {
     InputChanged(String),
+    SearchButtonClicked,
 }
 
 #[derive(PartialEq, Clone, Debug)]
@@ -145,7 +147,10 @@ impl Render for SearchBarView {
                     Some(SearchBarEvent::InputChanged(value.to_string()))
                 }),
             ),
-            button((), "검색"),
+            button(
+                on_click((), |_, _| Some(SearchBarEvent::SearchButtonClicked)),
+                "검색",
+            ),
         ))
     }
 }

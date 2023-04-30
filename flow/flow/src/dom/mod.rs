@@ -8,6 +8,7 @@ pub mod server_side_render;
 mod start;
 pub mod style;
 
+use crate::Closured;
 pub use html_view::*;
 pub use html_virtual_node::*;
 #[cfg(feature = "dom")]
@@ -20,30 +21,19 @@ pub use style::*;
 #[cfg(any(feature = "dom", feature = "dom-ssr"))]
 const INITIAL_STATE: &str = "__INITIAL_STATE__";
 
+#[derive(Clone, PartialEq, Debug)]
 pub struct OnClick {
-    event: Box<dyn crate::AnyClonePartialEq>,
+    closure: Closured<()>,
 }
 
-impl Clone for OnClick {
-    fn clone(&self) -> Self {
-        Self {
-            event: self.event.clone_box(),
-        }
-    }
-}
-impl PartialEq for OnClick {
-    fn eq(&self, other: &Self) -> bool {
-        self.event.equals(other.event.as_ref())
-    }
-}
-impl Debug for OnClick {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.event.debug(f)
-    }
-}
-
-pub fn on_click(event: impl std::any::Any + Clone + PartialEq + Debug) -> OnClick {
+pub fn on_click<Capture, Return: 'static>(
+    capture: Capture,
+    func: fn(&(), &Capture) -> Option<Return>,
+) -> OnClick
+where
+    Capture: std::any::Any + Clone + PartialEq + std::fmt::Debug,
+{
     OnClick {
-        event: Box::new(event),
+        closure: crate::closure(capture, func).to_closured(),
     }
 }
