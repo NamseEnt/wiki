@@ -5,8 +5,10 @@ pub async fn start<'a, View: Render + PartialEq + Clone + 'static>(
     mut model: impl ViewModel<View>,
     on_mount: &dyn Fn(&Node, &Vec<&Node>),
 ) {
-    // TODO: Pass event to tx
-    let (_tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
+    let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
+    unsafe {
+        TX = Some(tx);
+    }
 
     let mut render_tree: Option<RenderTree> = None;
     let view = model.as_view();
@@ -19,7 +21,14 @@ pub async fn start<'a, View: Render + PartialEq + Clone + 'static>(
         model = model.reduce(event.as_ref());
 
         let view = model.as_view();
-        update_view(&mut render_tree, view, on_mount);
+    }
+}
+
+static mut TX: Option<tokio::sync::mpsc::UnboundedSender<Box<dyn std::any::Any>>> = None;
+
+pub(crate) fn emit_event(event: Box<dyn std::any::Any>) {
+    unsafe {
+        TX.as_ref().unwrap().send(event).unwrap();
     }
 }
 
