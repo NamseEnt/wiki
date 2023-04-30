@@ -4,6 +4,7 @@ use render_tree::{Node, RenderTree};
 pub async fn start<'a, View: Render + PartialEq + Clone + 'static>(
     mut model: impl ViewModel<View>,
     on_mount: &dyn Fn(&Node, &Vec<&Node>),
+    on_props_update: &dyn Fn(&Node, &Vec<&Node>),
 ) {
     let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
     unsafe {
@@ -12,7 +13,7 @@ pub async fn start<'a, View: Render + PartialEq + Clone + 'static>(
 
     let mut render_tree: Option<RenderTree> = None;
     let view = model.as_view();
-    update_view(&mut render_tree, view, on_mount);
+    update_view(&mut render_tree, view, on_mount, on_props_update);
 
     loop {
         let event: Box<dyn std::any::Any> = rx.recv().await.unwrap();
@@ -21,6 +22,7 @@ pub async fn start<'a, View: Render + PartialEq + Clone + 'static>(
         model = model.reduce(event.as_ref());
 
         let view = model.as_view();
+        update_view(&mut render_tree, view, on_mount, on_props_update);
     }
 }
 
@@ -38,7 +40,7 @@ pub fn render_once<'a, View: Render + PartialEq + Clone + 'static>(
 ) -> Option<RenderTree> {
     let mut render_tree: Option<RenderTree> = None;
     let view = model.as_view();
-    update_view(&mut render_tree, view, on_mount);
+    update_view(&mut render_tree, view, on_mount, &|_, _| {});
     render_tree
 }
 
@@ -46,14 +48,15 @@ fn update_view<'a>(
     render_tree: &mut Option<RenderTree>,
     view: impl Render + PartialEq + Clone + 'static,
     on_mount: &dyn Fn(&Node, &Vec<&Node>),
+    on_props_update: &dyn Fn(&Node, &Vec<&Node>),
 ) {
     println!("update_view");
     match render_tree.as_mut() {
         Some(render_tree) => {
-            render_tree.update(view, &on_mount);
+            render_tree.update(view, &on_mount, &on_props_update);
         }
         None => {
-            *render_tree = Some(RenderTree::from_render(view, &on_mount));
+            *render_tree = Some(RenderTree::from_render(view, &on_mount, &on_props_update));
         }
     }
 }

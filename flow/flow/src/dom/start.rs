@@ -41,7 +41,26 @@ pub async fn start_dom<View: Render + PartialEq + Clone + 'static>(
         parent.append_child(&dom_node).unwrap();
         *platform_data = Some(Box::new(dom_node));
     };
-    crate::start(model, &on_mount).await;
+    let on_props_update = |node: &Node, ancestors: &Vec<&Node>| {
+        let Some(html_node_view) = node.box_render.as_any().downcast_ref::<HtmlNodeView>() else {
+            return;
+        };
+
+        let platform_data = node.platform_data.lock().unwrap();
+
+        if let Some(any) = platform_data.as_ref() {
+            let dom_node = any.downcast_ref::<web_sys::Node>().unwrap();
+            if !try_update_dom_node_without_create(dom_node, html_node_view) {
+                unreachable!(
+                    "fail to update dom node, dom_node tag name: {:?}, {html_node_view:?}",
+                    dom_node
+                        .dyn_ref::<web_sys::HtmlElement>()
+                        .map(|x| x.tag_name())
+                );
+            }
+        };
+    };
+    crate::start(model, &on_mount, &on_props_update).await;
 }
 
 fn try_update_dom_node_without_create(

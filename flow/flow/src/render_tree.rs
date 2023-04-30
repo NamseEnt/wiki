@@ -34,6 +34,7 @@ impl RenderTree {
     pub fn from_render(
         render: impl Render + PartialEq + Clone + 'static,
         on_mount: &dyn Fn(&Node, &Vec<&Node>),
+        on_props_update: &dyn Fn(&Node, &Vec<&Node>),
     ) -> RenderTree {
         render.on_mount();
 
@@ -49,6 +50,7 @@ impl RenderTree {
             &mut children,
             node.box_render.clone_box(),
             &on_mount,
+            &on_props_update,
             &vec![&node],
         );
 
@@ -59,6 +61,7 @@ impl RenderTree {
         &mut self,
         render: impl Render + PartialEq + Clone + 'static,
         on_mount: &dyn Fn(&Node, &Vec<&Node>),
+        on_props_update: &dyn Fn(&Node, &Vec<&Node>),
     ) {
         let Self::Single{ node, children } = self else {
             unreachable!()
@@ -79,12 +82,14 @@ impl RenderTree {
         } else {
             crate::log!(" # same type id update props");
             node.box_render = render.clone_box();
+            on_props_update(&node, &vec![]);
         }
 
         update_children(
             children,
             node.box_render.clone_box(),
             &on_mount,
+            &on_props_update,
             &vec![&node],
         );
     }
@@ -92,6 +97,7 @@ impl RenderTree {
     fn from_element<'a>(
         element: Element,
         on_mount: &dyn Fn(&Node, &Vec<&Node>),
+        on_props_update: &dyn Fn(&Node, &Vec<&Node>),
         ancestors: &Vec<&Node>,
     ) -> Self {
         element.on_mount();
@@ -107,6 +113,7 @@ impl RenderTree {
                     render_to_children(
                         node.box_render.clone_box(),
                         &on_mount,
+                        &on_props_update,
                         &ancestors
                             .clone()
                             .into_iter()
@@ -120,7 +127,9 @@ impl RenderTree {
             Element::Multiple { elements } => {
                 let nodes = elements
                     .into_iter()
-                    .map(|element| RenderTree::from_element(element, &on_mount, ancestors))
+                    .map(|element| {
+                        RenderTree::from_element(element, &on_mount, &on_props_update, ancestors)
+                    })
                     .collect();
 
                 Self::Multiple { nodes }
@@ -132,6 +141,7 @@ impl RenderTree {
         &mut self,
         element: Element,
         on_mount: &dyn Fn(&Node, &Vec<&Node>),
+        on_props_update: &dyn Fn(&Node, &Vec<&Node>),
         ancestors: &Vec<&Node>,
     ) {
         match (&self, element) {
@@ -166,12 +176,14 @@ impl RenderTree {
                 } else {
                     crate::log!(" # same type id update props");
                     node.box_render = element_box_render.clone_box();
+                    on_props_update(&node, &vec![]);
                 }
 
                 update_children(
                     children,
                     element_box_render,
                     on_mount,
+                    on_props_update,
                     &ancestors
                         .clone()
                         .into_iter()
@@ -184,7 +196,9 @@ impl RenderTree {
 
                 let nodes = elements
                     .into_iter()
-                    .map(|element| RenderTree::from_element(element, on_mount, ancestors))
+                    .map(|element| {
+                        RenderTree::from_element(element, on_mount, on_props_update, ancestors)
+                    })
                     .collect();
 
                 *self = RenderTree::Multiple { nodes };
@@ -202,6 +216,7 @@ impl RenderTree {
                     render_to_children(
                         node.box_render.clone_box(),
                         on_mount,
+                        on_props_update,
                         &ancestors
                             .clone()
                             .into_iter()
@@ -223,10 +238,15 @@ impl RenderTree {
                     let node = nodes.get_mut(index);
                     match node {
                         Some(node) => {
-                            node.update_by_element(element, on_mount, ancestors);
+                            node.update_by_element(element, on_mount, on_props_update, ancestors);
                         }
                         None => {
-                            nodes.push(RenderTree::from_element(element, on_mount, ancestors));
+                            nodes.push(RenderTree::from_element(
+                                element,
+                                on_mount,
+                                on_props_update,
+                                ancestors,
+                            ));
                         }
                     }
                 }
@@ -260,6 +280,7 @@ fn update_children<'a>(
     children: &mut Vec<RenderTree>,
     render: Box<dyn Render>,
     on_mount: &dyn Fn(&Node, &Vec<&Node>),
+    on_props_update: &dyn Fn(&Node, &Vec<&Node>),
     ancestors: &Vec<&Node>,
 ) {
     #[allow(deprecated)]
@@ -271,10 +292,15 @@ fn update_children<'a>(
         let child = children.get_mut(index);
         match child {
             Some(child) => {
-                child.update_by_element(element, on_mount, ancestors);
+                child.update_by_element(element, on_mount, on_props_update, ancestors);
             }
             None => {
-                children.push(RenderTree::from_element(element, on_mount, ancestors));
+                children.push(RenderTree::from_element(
+                    element,
+                    on_mount,
+                    on_props_update,
+                    ancestors,
+                ));
             }
         }
     }
@@ -296,11 +322,12 @@ fn render_to_elements(render: Box<dyn Render>) -> Vec<Element> {
 fn render_to_children<'a>(
     render: Box<dyn Render>,
     on_mount: &dyn Fn(&Node, &Vec<&Node>),
+    on_props_update: &dyn Fn(&Node, &Vec<&Node>),
     ancestors: &Vec<&Node>,
 ) -> Vec<RenderTree> {
     let elements = render_to_elements(render);
     elements
         .into_iter()
-        .map(|element| RenderTree::from_element(element, on_mount, ancestors))
+        .map(|element| RenderTree::from_element(element, on_mount, on_props_update, ancestors))
         .collect()
 }
