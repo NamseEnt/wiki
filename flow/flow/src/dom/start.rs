@@ -157,7 +157,7 @@ fn create_dom_node(html_node_view: &HtmlNodeView) -> DomPlatformData {
             on_click_event_listener: None,
         },
         HtmlNodeView::TextInput(text_input) => {
-            let text_input_element = document
+            let text_input_element: web_sys::HtmlInputElement = document
                 .create_element("input")
                 .unwrap()
                 .dyn_into::<web_sys::HtmlInputElement>()
@@ -165,8 +165,6 @@ fn create_dom_node(html_node_view: &HtmlNodeView) -> DomPlatformData {
 
             text_input_element.set_attribute("type", "text").unwrap();
             text_input_element.set_value(&text_input.value);
-
-            let text_value = text_input.value.clone();
 
             text_input_element
                 .add_event_listener_with_callback(
@@ -182,8 +180,6 @@ fn create_dom_node(html_node_view: &HtmlNodeView) -> DomPlatformData {
                                 .unwrap();
                             let text = element.value();
                             on_changed.invoke(&text);
-                            event.prevent_default();
-                            element.set_value(&text_value);
                         }
                     })
                         as Box<dyn FnMut(_)>)
