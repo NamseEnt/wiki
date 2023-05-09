@@ -40,7 +40,7 @@ fn create_index(md_files: &Vec<MdFile>) -> MdFile {
                 .unwrap();
 
             format!(
-                "- [{}](/{})",
+                "- [{}]({})",
                 file_name,
                 urlencoding::encode(
                     md_file
