@@ -1,6 +1,18 @@
 use super::*;
 use crate::{render_tree::Node, *};
+use std::sync::{Arc, Mutex};
 use wasm_bindgen::JsCast;
+
+#[derive(Debug)]
+struct DomPlatformData {
+    dom_node: web_sys::Node,
+    on_click_event_listener: Option<OnClickEventListener>,
+}
+
+#[derive(Debug)]
+struct OnClickEventListener {
+    on_click_closure: Arc<Mutex<Option<Closured<()>>>>,
+}
 
 pub async fn start_dom<View: Render + PartialEq + Clone + 'static>(
     root_id: impl ToString,
@@ -18,42 +30,43 @@ pub async fn start_dom<View: Render + PartialEq + Clone + 'static>(
 
     let root_node = root_element.dyn_into::<web_sys::Node>().unwrap();
 
-    let on_mount = |node: &Node, ancestors: &Vec<&Node>| {
+    let on_mount = |node: &Node<DomPlatformData>, ancestors: &Vec<&Node<DomPlatformData>>| {
         let Some(html_node_view) = node.box_render.as_any().downcast_ref::<HtmlNodeView>() else {
             return;
         };
 
         let mut platform_data = node.platform_data.lock().unwrap();
 
-        if let Some(any) = platform_data.as_ref() {
-            let dom_node = any.downcast_ref::<web_sys::Node>().unwrap();
-            if try_update_dom_node_without_create(dom_node, html_node_view) {
+        if let Some(dom_platform_data) = platform_data.as_mut() {
+            if try_update_dom_node_without_create(dom_platform_data, html_node_view) {
                 return;
             }
-            dom_node
+            dom_platform_data
+                .dom_node
                 .parent_node()
                 .unwrap()
-                .remove_child(dom_node)
+                .remove_child(&dom_platform_data.dom_node)
                 .unwrap();
         };
-        let dom_node = create_dom_node(html_node_view);
+        let dom_platform_data = create_dom_node(html_node_view);
         let parent = find_dom_parent(&ancestors).unwrap_or_else(|| root_node.clone());
-        parent.append_child(&dom_node).unwrap();
-        *platform_data = Some(Box::new(dom_node));
+        parent.append_child(&dom_platform_data.dom_node).unwrap();
+        *platform_data = Some(dom_platform_data);
     };
-    let on_props_update = |node: &Node, ancestors: &Vec<&Node>| {
+    let on_props_update = |node: &Node<DomPlatformData>,
+                           ancestors: &Vec<&Node<DomPlatformData>>| {
         let Some(html_node_view) = node.box_render.as_any().downcast_ref::<HtmlNodeView>() else {
             return;
         };
 
-        let platform_data = node.platform_data.lock().unwrap();
+        let mut platform_data = node.platform_data.lock().unwrap();
 
-        if let Some(any) = platform_data.as_ref() {
-            let dom_node = any.downcast_ref::<web_sys::Node>().unwrap();
-            if !try_update_dom_node_without_create(dom_node, html_node_view) {
+        if let Some(dom_platform_data) = platform_data.as_mut() {
+            if !try_update_dom_node_without_create(dom_platform_data, html_node_view) {
                 unreachable!(
                     "fail to update dom node, dom_node tag name: {:?}, {html_node_view:?}",
-                    dom_node
+                    dom_platform_data
+                        .dom_node
                         .dyn_ref::<web_sys::HtmlElement>()
                         .map(|x| x.tag_name())
                 );
@@ -64,12 +77,12 @@ pub async fn start_dom<View: Render + PartialEq + Clone + 'static>(
 }
 
 fn try_update_dom_node_without_create(
-    dom_node: &web_sys::Node,
+    dom_platform_data: &mut DomPlatformData,
     html_node_view: &HtmlNodeView,
 ) -> bool {
     match html_node_view {
         HtmlNodeView::Text(text) => {
-            let Some(text_node) = dom_node.dyn_ref::<web_sys::Text>() else {
+            let Some(text_node) = dom_platform_data.dom_node.dyn_ref::<web_sys::Text>() else {
                 return false;
             };
 
@@ -78,29 +91,67 @@ fn try_update_dom_node_without_create(
             true
         }
         HtmlNodeView::TextInput(text_input) => {
-            crate::log!("here!");
-            let Some(text_input_element) = dom_node.dyn_ref::<web_sys::HtmlInputElement>() else {
+            let Some(text_input_element) = dom_platform_data.dom_node.dyn_ref::<web_sys::HtmlInputElement>() else {
                 return false;
             };
 
-            crate::log!("am!");
-
             text_input_element.set_value(&text_input.value);
-            crate::log!("value: {}", text_input.value);
 
             true
         }
-        _ => dom_node
-            .dyn_ref::<web_sys::HtmlElement>()
-            .map(|x| x.tag_name() == html_node_view.upper_tag_name().unwrap())
-            .is_some(),
+        _ => {
+            let Some(element) = dom_platform_data
+            .dom_node
+            .dyn_ref::<web_sys::HtmlElement>() else {
+                return false;
+            };
+
+            if element.tag_name() != html_node_view.upper_tag_name().unwrap() {
+                return false;
+            }
+
+            match (
+                &mut dom_platform_data.on_click_event_listener,
+                html_node_view.on_click(),
+            ) {
+                (None, None) => {
+                    // Nothing
+                }
+                (None, Some(on_click_closure)) => {
+                    // TODO: Add event listener
+                    dom_platform_data.on_click_event_listener = Some(create_click_event_listener(
+                        element,
+                        on_click_closure.closure.clone(),
+                    ))
+                }
+                (Some(on_click_event_listener), None) => {
+                    on_click_event_listener
+                        .on_click_closure
+                        .lock()
+                        .unwrap()
+                        .take();
+                }
+                (Some(on_click_event_listener), Some(next_on_click)) => {
+                    let mut on_click_closure =
+                        on_click_event_listener.on_click_closure.lock().unwrap();
+                    if on_click_closure.as_ref().ne(&Some(&next_on_click.closure)) {
+                        *on_click_closure = Some(next_on_click.closure.clone());
+                    }
+                }
+            }
+
+            true
+        }
     }
 }
 
-fn create_dom_node(html_node_view: &HtmlNodeView) -> web_sys::Node {
+fn create_dom_node(html_node_view: &HtmlNodeView) -> DomPlatformData {
     let document = web_sys::window().unwrap().document().unwrap();
     match html_node_view {
-        HtmlNodeView::Text(text) => document.create_text_node(&text.text).into(),
+        HtmlNodeView::Text(text) => DomPlatformData {
+            dom_node: document.create_text_node(&text.text).into(),
+            on_click_event_listener: None,
+        },
         HtmlNodeView::TextInput(text_input) => {
             let text_input_element = document
                 .create_element("input")
@@ -112,12 +163,12 @@ fn create_dom_node(html_node_view: &HtmlNodeView) -> web_sys::Node {
             text_input_element.set_value(&text_input.value);
 
             let text_value = text_input.value.clone();
-            crate::log!("value on create_dom_node: {text_value}");
 
             text_input_element
                 .add_event_listener_with_callback(
                     "input",
                     wasm_bindgen::closure::Closure::wrap(Box::new({
+                        // TODO: 이거를 Arc<Mutex로 바꿔. 그리고 이거를 view에도 저장해놔.
                         let on_changed = text_input.on_changed.clone();
                         move |event: web_sys::InputEvent| {
                             let element = event
@@ -137,7 +188,10 @@ fn create_dom_node(html_node_view: &HtmlNodeView) -> web_sys::Node {
                 )
                 .unwrap();
 
-            text_input_element.into()
+            DomPlatformData {
+                dom_node: text_input_element.into(),
+                on_click_event_listener: None,
+            }
         }
         HtmlNodeView::A(a) => create_element_node_for_common_html(a),
         HtmlNodeView::Abbr(abbr) => create_element_node_for_common_html(abbr),
@@ -256,40 +310,50 @@ fn create_dom_node(html_node_view: &HtmlNodeView) -> web_sys::Node {
     }
 }
 
-fn create_element_node_for_common_html(view: &impl HtmlElementView) -> web_sys::Node {
+fn create_element_node_for_common_html(view: &impl HtmlElementView) -> DomPlatformData {
     let document = web_sys::window().unwrap().document().unwrap();
     let element = document.create_element(view.lower_tag_name()).unwrap();
 
-    if let Some(on_click) = view.on_click() {
-        element
-            .add_event_listener_with_callback(
-                "click",
-                wasm_bindgen::closure::Closure::wrap(Box::new({
-                    let on_click = on_click.clone();
-                    move |_event: web_sys::Event| {
-                        crate::log!("click!");
-                        on_click.closure.invoke(&())
-                    }
-                }) as Box<dyn FnMut(_)>)
-                .into_js_value()
-                .unchecked_ref(),
-            )
-            .unwrap();
-    }
+    let on_click_event_listener = view
+        .on_click()
+        .map(|on_click| create_click_event_listener(&element, on_click.closure.clone()));
 
-    element.into()
+    DomPlatformData {
+        dom_node: element.into(),
+        on_click_event_listener,
+    }
 }
 
-fn find_dom_parent(ancestors: &[&Node]) -> Option<web_sys::Node> {
+fn create_click_event_listener(
+    element: &web_sys::Element,
+    on_click_closure: Closured<()>,
+) -> OnClickEventListener {
+    let on_click_closure: Arc<Mutex<Option<Closured<()>>>> =
+        Arc::new(Mutex::new(Some(on_click_closure)));
+    element
+        .add_event_listener_with_callback(
+            "click",
+            wasm_bindgen::closure::Closure::wrap(Box::new({
+                let on_click = on_click_closure.clone();
+                move |_event: web_sys::Event| {
+                    if let Some(on_click) = on_click.lock().unwrap().as_ref() {
+                        on_click.invoke(&());
+                    }
+                }
+            }) as Box<dyn FnMut(_)>)
+            .into_js_value()
+            .unchecked_ref(),
+        )
+        .unwrap();
+
+    OnClickEventListener { on_click_closure }
+}
+
+fn find_dom_parent(ancestors: &[&Node<DomPlatformData>]) -> Option<web_sys::Node> {
     for near_ancestor in ancestors.iter().rev() {
         let platform_data = near_ancestor.platform_data.lock().unwrap();
         if let Some(platform_data) = platform_data.as_ref() {
-            return Some(
-                platform_data
-                    .downcast_ref::<web_sys::Node>()
-                    .unwrap()
-                    .clone(),
-            );
+            return Some(platform_data.dom_node.clone());
         }
     }
 

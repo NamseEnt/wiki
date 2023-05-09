@@ -5,12 +5,12 @@ use std::{
 };
 
 #[derive(Debug)]
-pub struct Node {
+pub struct Node<PlatformData> {
     pub box_render: Box<dyn Render>,
-    pub platform_data: Arc<Mutex<Option<Box<dyn Any>>>>,
+    pub platform_data: Arc<Mutex<Option<PlatformData>>>,
 }
 
-impl Node {
+impl<PlatformData> Node<PlatformData> {
     fn on_mount(&self) {
         self.box_render.on_mount();
     }
@@ -20,22 +20,22 @@ impl Node {
 }
 
 #[derive(Debug)]
-pub enum RenderTree {
+pub enum RenderTree<PlatformData> {
     Single {
-        node: Node,
-        children: Vec<RenderTree>,
+        node: Node<PlatformData>,
+        children: Vec<RenderTree<PlatformData>>,
     },
     Multiple {
-        nodes: Vec<RenderTree>,
+        nodes: Vec<RenderTree<PlatformData>>,
     },
 }
 
-impl RenderTree {
+impl<PlatformData> RenderTree<PlatformData> {
     pub fn from_render(
         render: impl Render + PartialEq + Clone + 'static,
-        on_mount: &dyn Fn(&Node, &Vec<&Node>),
-        on_props_update: &dyn Fn(&Node, &Vec<&Node>),
-    ) -> RenderTree {
+        on_mount: &dyn Fn(&Node<PlatformData>, &Vec<&Node<PlatformData>>),
+        on_props_update: &dyn Fn(&Node<PlatformData>, &Vec<&Node<PlatformData>>),
+    ) -> RenderTree<PlatformData> {
         render.on_mount();
 
         let node = Node {
@@ -60,8 +60,8 @@ impl RenderTree {
     pub fn update(
         &mut self,
         render: impl Render + PartialEq + Clone + 'static,
-        on_mount: &dyn Fn(&Node, &Vec<&Node>),
-        on_props_update: &dyn Fn(&Node, &Vec<&Node>),
+        on_mount: &dyn Fn(&Node<PlatformData>, &Vec<&Node<PlatformData>>),
+        on_props_update: &dyn Fn(&Node<PlatformData>, &Vec<&Node<PlatformData>>),
     ) {
         let Self::Single{ node, children } = self else {
             unreachable!()
@@ -96,9 +96,9 @@ impl RenderTree {
 
     fn from_element<'a>(
         element: Element,
-        on_mount: &dyn Fn(&Node, &Vec<&Node>),
-        on_props_update: &dyn Fn(&Node, &Vec<&Node>),
-        ancestors: &Vec<&Node>,
+        on_mount: &dyn Fn(&Node<PlatformData>, &Vec<&Node<PlatformData>>),
+        on_props_update: &dyn Fn(&Node<PlatformData>, &Vec<&Node<PlatformData>>),
+        ancestors: &Vec<&Node<PlatformData>>,
     ) -> Self {
         element.on_mount();
 
@@ -117,7 +117,7 @@ impl RenderTree {
                         &ancestors
                             .clone()
                             .into_iter()
-                            .chain(std::iter::once::<&Node>(&node))
+                            .chain(std::iter::once::<&Node<PlatformData>>(&node))
                             .collect(),
                     )
                 };
@@ -140,9 +140,9 @@ impl RenderTree {
     fn update_by_element<'a>(
         &mut self,
         element: Element,
-        on_mount: &dyn Fn(&Node, &Vec<&Node>),
-        on_props_update: &dyn Fn(&Node, &Vec<&Node>),
-        ancestors: &Vec<&Node>,
+        on_mount: &dyn Fn(&Node<PlatformData>, &Vec<&Node<PlatformData>>),
+        on_props_update: &dyn Fn(&Node<PlatformData>, &Vec<&Node<PlatformData>>),
+        ancestors: &Vec<&Node<PlatformData>>,
     ) {
         match (&self, element) {
             (
@@ -187,7 +187,7 @@ impl RenderTree {
                     &ancestors
                         .clone()
                         .into_iter()
-                        .chain(std::iter::once::<&Node>(&node))
+                        .chain(std::iter::once::<&Node<PlatformData>>(&node))
                         .collect(),
                 );
             }
@@ -220,7 +220,7 @@ impl RenderTree {
                         &ancestors
                             .clone()
                             .into_iter()
-                            .chain(std::iter::once::<&Node>(&node))
+                            .chain(std::iter::once::<&Node<PlatformData>>(&node))
                             .collect(),
                     )
                 };
@@ -276,12 +276,12 @@ impl RenderTree {
     }
 }
 
-fn update_children<'a>(
-    children: &mut Vec<RenderTree>,
+fn update_children<'a, PlatformData>(
+    children: &mut Vec<RenderTree<PlatformData>>,
     render: Box<dyn Render>,
-    on_mount: &dyn Fn(&Node, &Vec<&Node>),
-    on_props_update: &dyn Fn(&Node, &Vec<&Node>),
-    ancestors: &Vec<&Node>,
+    on_mount: &dyn Fn(&Node<PlatformData>, &Vec<&Node<PlatformData>>),
+    on_props_update: &dyn Fn(&Node<PlatformData>, &Vec<&Node<PlatformData>>),
+    ancestors: &Vec<&Node<PlatformData>>,
 ) {
     #[allow(deprecated)]
     let elements: Vec<Element> = render_to_elements(render);
@@ -319,12 +319,12 @@ fn render_to_elements(render: Box<dyn Render>) -> Vec<Element> {
     }
 }
 
-fn render_to_children<'a>(
+fn render_to_children<'a, PlatformData>(
     render: Box<dyn Render>,
-    on_mount: &dyn Fn(&Node, &Vec<&Node>),
-    on_props_update: &dyn Fn(&Node, &Vec<&Node>),
-    ancestors: &Vec<&Node>,
-) -> Vec<RenderTree> {
+    on_mount: &dyn Fn(&Node<PlatformData>, &Vec<&Node<PlatformData>>),
+    on_props_update: &dyn Fn(&Node<PlatformData>, &Vec<&Node<PlatformData>>),
+    ancestors: &Vec<&Node<PlatformData>>,
+) -> Vec<RenderTree<PlatformData>> {
     let elements = render_to_elements(render);
     elements
         .into_iter()

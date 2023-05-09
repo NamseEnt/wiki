@@ -1,10 +1,10 @@
 macro_rules! common_element {
-    ($(($lower:ident, $upper:ident)),*) => {
+    ($(($lower:ident, $pascal:ident, $upper:ident),)*) => {
         #[derive(Clone, PartialEq, Debug)]
         pub(crate) enum HtmlNodeView {
             Text(TextNodeView),
             $(
-                $upper($lower::View),
+                $pascal($lower::View),
             )*
             TextInput(text_input::View),
         }
@@ -15,8 +15,8 @@ macro_rules! common_element {
                 match self {
                     Self::Text(text) => crate::dom::HtmlVirtualNode::Text(text.text.clone()),
                     $(
-                        Self::$upper(_) => crate::dom::HtmlVirtualNode::Element(crate::dom::HtmlElement::new(
-                            stringify!($lower)
+                        Self::$pascal(_) => crate::dom::HtmlVirtualNode::Element(crate::dom::HtmlElement::new(
+                            stringify!($upper)
                         )),
                     )*
                     Self::TextInput(_) => crate::dom::HtmlVirtualNode::Element(crate::dom::HtmlElement::new(
@@ -29,7 +29,7 @@ macro_rules! common_element {
                 match self {
                     Self::Text(_) => None,
                     $(
-                        Self::$upper(_) => Some(stringify!($upper)),
+                        Self::$pascal(_) => Some(stringify!($upper)),
                     )*
                     Self::TextInput(_) => Some("Input"),
                 }
@@ -39,9 +39,19 @@ macro_rules! common_element {
                 match self {
                     Self::Text(_) => None,
                     $(
-                        Self::$upper(_) => Some(stringify!($lower)),
+                        Self::$pascal(_) => Some(stringify!($lower)),
                     )*
                     Self::TextInput(_) => Some("input"),
+                }
+            }
+            #[cfg(feature = "dom")]
+            pub(crate) fn on_click(&self) -> Option<&crate::OnClick> {
+                match self {
+                    Self::Text(_) => None,
+                    $(
+                        Self::$pascal(view) => view.on_click(),
+                    )*
+                    Self::TextInput(view) => None, // TODO
                 }
             }
         }
@@ -52,7 +62,7 @@ macro_rules! common_element {
                 match *self {
                     HtmlNodeView::Text(text) => render(text),
                     $(
-                        HtmlNodeView::$upper($lower) => render($lower),
+                        HtmlNodeView::$pascal($lower) => render($lower),
                     )*
                     HtmlNodeView::TextInput(text_input) => render(text_input),
                 }
@@ -80,7 +90,7 @@ macro_rules! common_element {
                     };
                     props.add_to(&mut $lower);
                     Element::Single {
-                        box_render: Box::new(HtmlNodeView::$upper($lower)),
+                        box_render: Box::new(HtmlNodeView::$pascal($lower)),
                     }
                 }
 

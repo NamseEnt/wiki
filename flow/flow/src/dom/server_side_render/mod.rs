@@ -12,7 +12,7 @@ pub fn server_side_render<View: Render + PartialEq + Clone + 'static>(
     let render_tree = crate::render_once(model, &|_, _| {}).unwrap();
     println!("{render_tree:#?}");
 
-    fn traverse(render_tree: render_tree::RenderTree, parent: &mut HtmlElement) {
+    fn traverse(render_tree: render_tree::RenderTree<()>, parent: &mut HtmlElement) {
         match render_tree {
             render_tree::RenderTree::Single { node, children } => {
                 let mut node = if let Some(html_node_view) =

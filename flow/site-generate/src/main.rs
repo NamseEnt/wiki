@@ -2,10 +2,12 @@ mod dir;
 mod md_file;
 mod search;
 
+use anyhow::Result;
 use md_file::MdFile;
+use search::create_search_page;
 use std::{fs, path, process, sync::mpsc};
 
-fn main() {
+fn main() -> Result<()> {
     let md_files = start_read_contents_dir();
 
     for md_file in md_files {
@@ -13,6 +15,9 @@ fn main() {
     }
 
     generate_flow_files();
+    create_search_page()?;
+
+    Ok(())
 }
 
 fn generate_flow_files() {

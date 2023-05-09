@@ -27,7 +27,7 @@ pub fn text_input<
 pub struct View {
     style: Option<HtmlStyle>,
     pub(crate) value: String,
-    pub(crate) on_changed: Closured<String>, // 바뀌면 이걸로 call 해줘
+    pub(crate) on_changed: Closured<String>,
 }
 
 impl Render for View {

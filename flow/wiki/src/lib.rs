@@ -53,7 +53,6 @@ impl Reduce for SearchBarModel {
                         input: input.clone(),
                     }
                 }
-                SearchBarEvent::SearchButtonClicked => todo!(),
             }
         } else {
             self
@@ -63,7 +62,6 @@ impl Reduce for SearchBarModel {
 
 pub enum SearchBarEvent {
     InputChanged(String),
-    SearchButtonClicked,
 }
 
 #[derive(PartialEq, Clone, Debug)]
@@ -141,14 +139,24 @@ impl Render for SearchBarView {
         render((
             text_input(
                 (),
-                self.model.input,
-                closure((), |value: &String, _capture| {
-                    flow::log!("input changed: {}", value);
+                self.model.input.clone(),
+                closure((), |value: &String, _| {
+                    flow::log!("input changed: {value}");
                     Some(SearchBarEvent::InputChanged(value.to_string()))
                 }),
             ),
             button(
-                on_click((), |_, _| Some(SearchBarEvent::SearchButtonClicked)),
+                on_click(self.model.input.clone(), |_, input| {
+                    flow::log!("button: {input}");
+
+                    web_sys::window()
+                        .unwrap()
+                        .location()
+                        .set_href(&format!("/search.html?q={input}",))
+                        .unwrap();
+
+                    None::<()>
+                }),
                 "검색",
             ),
         ))

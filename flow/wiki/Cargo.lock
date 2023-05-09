@@ -1415,6 +1415,7 @@ dependencies = [
  "comrak",
  "flow",
  "serde",
+ "web-sys",
 ]
 
 [[package]]
