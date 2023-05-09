@@ -20,6 +20,7 @@ impl MdFile {
         format!(
             r#"<html>
     <head>
+        <meta name="google-site-verification" content="9efo6hhn2ICuj3ksWpyNT-_I8g6SsO9DCX5Lfl74-GM" />
     </head>
     <body>
         {root}    
