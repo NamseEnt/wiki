@@ -152,7 +152,7 @@ impl Render for SearchBarView {
                     web_sys::window()
                         .unwrap()
                         .location()
-                        .set_href(&format!("/search.html?q={input}",))
+                        .set_href(&format!("search.html?q={input}",))
                         .unwrap();
 
                     None::<()>
