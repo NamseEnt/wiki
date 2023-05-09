@@ -16,7 +16,7 @@ macro_rules! common_element {
                     Self::Text(text) => crate::dom::HtmlVirtualNode::Text(text.text.clone()),
                     $(
                         Self::$pascal(_) => crate::dom::HtmlVirtualNode::Element(crate::dom::HtmlElement::new(
-                            stringify!($upper)
+                            stringify!($lower)
                         )),
                     )*
                     Self::TextInput(_) => crate::dom::HtmlVirtualNode::Element(crate::dom::HtmlElement::new(
