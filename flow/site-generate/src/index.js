@@ -1,4 +1,4 @@
-import init, { start } from "/wiki.js";
+import init, { start } from "./wiki.js";
 
 (async () => {
   await init();
