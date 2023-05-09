@@ -1,10 +1,12 @@
 mod dir;
 mod md_file;
 mod search;
+mod site_map;
 
 use anyhow::Result;
 use md_file::MdFile;
 use search::create_search_page;
+use site_map::save_site_map;
 use std::{fs, path, process, sync::mpsc};
 
 fn main() -> Result<()> {
@@ -17,6 +19,8 @@ fn main() -> Result<()> {
     }
     let index = create_index(&md_files);
     index.save_as_docs();
+
+    save_site_map(&md_files);
 
     generate_flow_files();
     create_search_page()?;
@@ -114,4 +118,11 @@ fn start_read_contents_dir() -> mpsc::Receiver<MdFile> {
     });
 
     rx
+}
+
+pub fn save_to_docs(relative_file_path: std::path::PathBuf, content: &str) {
+    let dest_path = dir::docs_dir().join(relative_file_path);
+
+    fs::create_dir_all(dest_path.parent().unwrap()).unwrap();
+    fs::write(dest_path, content).unwrap();
 }

@@ -32,13 +32,9 @@ impl MdFile {
     }
 
     pub fn save_as_docs(&self) {
-        let dest_path = dir::docs_dir()
-            .join(&self.contents_dir_relative_path)
-            .with_extension("html");
-
-        let html_content = self.to_html();
-
-        fs::create_dir_all(dest_path.parent().unwrap()).unwrap();
-        fs::write(dest_path, html_content).unwrap();
+        save_to_docs(
+            self.contents_dir_relative_path.with_extension("html"),
+            &self.to_html(),
+        )
     }
 }
