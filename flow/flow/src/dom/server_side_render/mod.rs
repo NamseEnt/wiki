@@ -5,7 +5,8 @@ pub fn server_side_render<View: Render + PartialEq + Clone + 'static>(
     root_id: impl ToString,
     model: impl ViewModel<View>,
 ) -> String {
-    let mut root = HtmlElement::new("div").id(root_id);
+    let mut root = HtmlElement::new("div");
+    root.attribute("id", root_id);
 
     let serialized_model = serde_json::to_string(&serde_json::to_string(&model).unwrap()).unwrap();
 

@@ -15,9 +15,17 @@ macro_rules! common_element {
                 match self {
                     Self::Text(text) => crate::dom::HtmlVirtualNode::Text(text.text.clone()),
                     $(
-                        Self::$pascal(_) => crate::dom::HtmlVirtualNode::Element(crate::dom::HtmlElement::new(
-                            stringify!($lower)
-                        )),
+                        Self::$pascal($lower) => {
+                            let mut element = crate::dom::HtmlElement::new(
+                                stringify!($lower)
+                            );;
+
+                            if let Some(href) = $lower.href() {
+                                element.attribute("href", href);
+                            }
+
+                            crate::dom::HtmlVirtualNode::Element(element)
+                        },
                     )*
                     Self::TextInput(_) => crate::dom::HtmlVirtualNode::Element(crate::dom::HtmlElement::new(
                         "input"
@@ -54,6 +62,16 @@ macro_rules! common_element {
                     Self::TextInput(view) => None, // TODO
                 }
             }
+            #[cfg(feature = "dom")]
+            pub(crate) fn href(&self) -> Option<&String> {
+                match self {
+                    Self::Text(_) => None,
+                    $(
+                        Self::$pascal(view) => view.href(),
+                    )*
+                    Self::TextInput(view) => None,
+                }
+            }
         }
 
 
@@ -70,11 +88,12 @@ macro_rules! common_element {
         }
 
         pub(crate) trait HtmlElementView {
-            fn on_click(&self) -> Option<&crate::OnClick>;
             #[cfg(feature = "dom")]
             fn upper_tag_name(&self) -> &str;
             #[cfg(feature = "dom")]
             fn lower_tag_name(&self) -> &str;
+            fn on_click(&self) -> Option<&crate::OnClick>;
+            fn href(&self) -> Option<&String>;
         }
 
         $(
@@ -85,8 +104,9 @@ macro_rules! common_element {
                     crate::log!("{}()", stringify!($lower));
                     let mut $lower = View {
                         style: None,
-                        on_click: None,
                         children: children.into_element(),
+                        on_click: None,
+                        href: None,
                     };
                     props.add_to(&mut $lower);
                     Element::Single {
@@ -97,8 +117,9 @@ macro_rules! common_element {
                 #[derive(Clone, PartialEq, Debug)]
                 pub struct View {
                     style: Option<HtmlStyle>,
-                    pub(crate) on_click: Option<OnClick>,
                     children: Element,
+                    pub(crate) on_click: Option<OnClick>,
+                    pub(crate) href: Option<Href>,
                 }
 
                 impl Render for View {
@@ -115,9 +136,6 @@ macro_rules! common_element {
                     }
                 }
                 impl HtmlElementView for View {
-                    fn on_click(&self) -> Option<&crate::OnClick> {
-                        self.on_click.as_ref()
-                    }
                     #[cfg(feature = "dom")]
                     fn upper_tag_name(&self) -> &str {
                         stringify!($upper)
@@ -125,6 +143,12 @@ macro_rules! common_element {
                     #[cfg(feature = "dom")]
                     fn lower_tag_name(&self) -> &str {
                         stringify!($lower)
+                    }
+                    fn on_click(&self) -> Option<&crate::OnClick> {
+                        self.on_click.as_ref()
+                    }
+                    fn href(&self) -> Option<&String> {
+                        self.href.as_ref().map(|href| &href.url)
                     }
                 }
 
@@ -147,6 +171,13 @@ macro_rules! common_element {
                     }
                 }
 
+                impl<T: Props> Props for Option<T> {
+                    fn add_to(self, $lower: &mut View) {
+                        if let Some(props) = self {
+                            props.add_to($lower);
+                        }
+                    }
+                }
                 impl Props for HtmlStyle {
                     fn add_to(self, $lower: &mut View) {
                         $lower.style = Some(self);
@@ -155,6 +186,11 @@ macro_rules! common_element {
                 impl Props for OnClick {
                     fn add_to(self, $lower: &mut View) {
                         $lower.on_click = Some(self);
+                    }
+                }
+                impl Props for Href {
+                    fn add_to(self, $lower: &mut View) {
+                        $lower.href = Some(self);
                     }
                 }
             }

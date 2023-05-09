@@ -8,16 +8,51 @@ use search::create_search_page;
 use std::{fs, path, process, sync::mpsc};
 
 fn main() -> Result<()> {
-    let md_files = start_read_contents_dir();
+    let md_file_rx = start_read_contents_dir();
 
-    for md_file in md_files {
+    let mut md_files = vec![];
+    for md_file in md_file_rx {
         md_file.save_as_docs();
+        md_files.push(md_file);
     }
+    let index = create_index(&md_files);
+    index.save_as_docs();
 
     generate_flow_files();
     create_search_page()?;
 
     Ok(())
+}
+
+fn create_index(md_files: &Vec<MdFile>) -> MdFile {
+    let file_links = md_files
+        .into_iter()
+        .map(|md_file| {
+            let file_name = md_file
+                .contents_dir_relative_path
+                .file_stem()
+                .unwrap()
+                .to_str()
+                .unwrap();
+
+            format!(
+                "- [{}](/{})",
+                file_name,
+                urlencoding::encode(
+                    md_file
+                        .contents_dir_relative_path
+                        .with_extension("html")
+                        .to_str()
+                        .unwrap()
+                )
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+    MdFile {
+        content: file_links,
+        contents_dir_relative_path: path::PathBuf::from("index"),
+    }
 }
 
 fn generate_flow_files() {

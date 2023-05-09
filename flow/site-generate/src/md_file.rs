@@ -7,7 +7,7 @@ pub struct MdFile {
 }
 impl MdFile {
     fn to_html(&self) -> String {
-        let title = self
+        let title: &str = self
             .contents_dir_relative_path
             .file_stem()
             .unwrap()

@@ -140,6 +140,10 @@ fn try_update_dom_node_without_create(
                 }
             }
 
+            if let Some(href) = html_node_view.href() {
+                element.set_attribute("href", href).unwrap();
+            }
+
             true
         }
     }
@@ -317,6 +321,10 @@ fn create_element_node_for_common_html(view: &impl HtmlElementView) -> DomPlatfo
     let on_click_event_listener = view
         .on_click()
         .map(|on_click| create_click_event_listener(&element, on_click.closure.clone()));
+
+    if let Some(href) = view.href() {
+        element.set_attribute("href", href).unwrap();
+    }
 
     DomPlatformData {
         dom_node: element.into(),

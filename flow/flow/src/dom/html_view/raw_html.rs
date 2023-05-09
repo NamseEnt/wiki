@@ -33,8 +33,8 @@ fn html_to_element(html: &str) -> Element {
     dom_element_to_element(root)
 }
 
-fn dom_element_to_element(element: scraper::ElementRef) -> Element {
-    let children = element
+fn dom_element_to_element(element_ref: scraper::ElementRef) -> Element {
+    let children = element_ref
         .children()
         .filter_map(|child| match child.value() {
             scraper::node::Node::Element(_) => Some(dom_element_to_element(
@@ -45,12 +45,14 @@ fn dom_element_to_element(element: scraper::ElementRef) -> Element {
         })
         .collect::<Vec<Element>>();
 
-    match element.value().name() {
+    let element = element_ref.value();
+    match element.name() {
         "html" => crate::render(children),
         "h1" => h1((), children),
         "li" => li((), children),
         "p" => p((), children),
         "ul" => ul((), children),
-        _ => panic!("Unknown element: {}", element.value().name()),
+        "a" => a(element.attr("href").map(|url| href(url)), children),
+        _ => panic!("Unknown element: {}", element_ref.value().name()),
     }
 }

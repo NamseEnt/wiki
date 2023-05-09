@@ -37,3 +37,14 @@ where
         closure: crate::closure(capture, func).to_closured(),
     }
 }
+
+#[derive(Clone, PartialEq, Debug)]
+pub struct Href {
+    url: String,
+}
+
+pub fn href(url: impl ToString) -> Href {
+    Href {
+        url: url.to_string(),
+    }
+}

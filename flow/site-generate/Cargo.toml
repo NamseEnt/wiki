@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.71"
 wiki = { path = "../wiki", features = ["dom-ssr"] }
+urlencoding = "2.1.2"
